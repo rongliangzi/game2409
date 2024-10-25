@@ -1,8 +1,8 @@
 save_dir: "/home/dcv-user/zhli/ubiquant/game2409/team_game_data/"
 team_id_path: "/home/dcv-user/zhli/ubiquant/game2409/team_id.txt"
 # max times for each team per day
-max_n: 2000
-max_step_seconds: 2
+max_n: 20000
+max_step_seconds: 120
 timeout_penalty: -0.05
 param1:
   size: 6

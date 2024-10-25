@@ -8,6 +8,7 @@ import gymnasium as gym
 import gymnasium_env
 import yaml
 from rule_utils import *
+from game_utils import *
 
 
 app = Flask(__name__)
@@ -22,58 +23,6 @@ with open(main_cfg["team_id_path"]) as f:
 print('team_id:', legal_team_id)
 
 
-def init_game(team_id, kwargs={}):
-    if not os.path.exists(os.path.join(main_cfg["save_dir"], team_id)):
-        os.mkdir(os.path.join(main_cfg["save_dir"], team_id))
-    now = datetime.now()
-    time_key = now.strftime("%Y%m%d-%H%M%S")
-    game_id = f'{team_id}_{time_key}'
-    game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
-    while True:
-        try:
-            os.makedirs(game_dir, exist_ok=False)
-        except OSError as e:
-            print(e, 'add a to game_id')
-            game_id = game_id +'a'
-            game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
-        else:
-            print('makedirs', game_dir)
-            break
-    #print(datetime.now(), 'Begin game, ', kwargs)
-    game_env = gym.make('gymnasium_env/GAME', **kwargs)
-    obs, info = game_env.reset()
-    #print(datetime.now(), 'finish reset')
-    with open(f'{game_dir}/game_env.pkl', 'wb') as f:
-        pickle.dump(game_env, f)
-    #print(datetime.now(), 'finish dump game_env')
-    return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), game_id
-
-
-def env_step(game_id, action, cls):
-    #print(datetime.now(), 'begin env_step')
-    game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
-    with open(f'{game_dir}/game_env.pkl', 'rb') as f:
-        game_env = pickle.load(f)
-    #print(datetime.now(), 'finish pickle load')
-    cls_penalty = 0
-    if (action == 4) and (game_env.get_current_cls() != -1):
-        correct = cls == game_env.get_current_cls()
-        if not correct:
-            cls_penalty = -0.1
-    obs, rew, term, _, info = game_env.step(action)
-    #print(datetime.now(), 'finish step')
-    rew += cls_penalty
-    with open(f'{game_dir}/game_env.pkl', 'wb') as f:
-        pickle.dump(game_env, f)
-    #print(datetime.now(), 'finish pickle dump')
-    if term:
-        with open(f'{game_dir}/finish.txt', 'w') as f:
-            f.write('finish')
-    np.save(f'{game_dir}/cum_score.npy', game_env.get_cum_score())
-    #print(datetime.now(), 'end env_step')
-    return obs['bag'].tolist(), obs['grid'].tolist(), rew, term
-
-
 def process_team_post(data, team_id):
     # check team id legal
     if data.get('begin', None):
@@ -84,14 +33,17 @@ def process_team_post(data, team_id):
             return f'begin must be in [1, 2, 3, 4], but found {param_type} with type({type(param_type)})', 400
         params = main_cfg[f'param{param_type}']
         print(f'Begin game type {data["begin"]}, team {team_id}')
-        img, bag, grid, game_id = init_game(team_id, params)
+        img, bag, grid, game_id = init_game(team_id, main_cfg, params)
         game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
         with open(f'{game_dir}/last_step_time.txt', 'w') as f:
             f.write(datetime.now().strftime('%Y%m%d %H%M%S.%f'))
+        with open(f'{game_dir}/game_result.pkl', 'wb') as f:
+            pickle.dump({'cum_score': 0, 'game_type': param_type}, f)
         return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid})
     else:
         # continue existing game, game_id, action, cls
         game_id = data.get('game_id', None)  # str
+        game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
         with open(f'{game_dir}/last_step_time.txt', 'r') as f:
             last_step_time = datetime.strptime(f.readlines()[0].strip(), '%Y%m%d %H%M%S.%f')
         time_diff = (datetime.now() - last_step_time).total_seconds()
@@ -99,7 +51,6 @@ def process_team_post(data, team_id):
             print('Game id not found')
             return 'Game id not found', 400
         #print(f'Continue game, id: {game_id}')
-        game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
         if os.path.exists(f'{game_dir}/finish.txt'):
             print('Game has finished')
             return 'Game has finished', 400
@@ -111,11 +62,19 @@ def process_team_post(data, team_id):
         if (action == 4) and (cls is None):
             print('Cls data cannot be None')
             return 'Cls data cannot be None', 401
-        bag, grid, score, is_end = env_step(game_id, action, cls)
+        bag, grid, score, is_end = env_step(game_id, main_cfg, action, cls)
         if time_diff > float(main_cfg['max_step_seconds']):
-            print(f"time_diff:{time_diff:.6f}, max_step_seconds:{float(main_cfg['max_step_seconds']):.1f}")
+            print(f"{game_id}, time_diff:{time_diff:.6f}, max_step_seconds:{float(main_cfg['max_step_seconds']):.1f}")
             score += main_cfg['timeout_penalty']
+        game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
+        with open(f'{game_dir}/game_result.pkl', 'rb') as f:
+            game_result = pickle.load(f)
+            game_result['cum_score'] += score
+        with open(f'{game_dir}/game_result.pkl', 'wb') as f:
+            pickle.dump(game_result, f)
         result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid}
+        with open(f'{game_dir}/last_step_time.txt', 'w') as f:
+            f.write(datetime.now().strftime('%Y%m%d %H%M%S.%f'))
         return jsonify(result)
 
 
