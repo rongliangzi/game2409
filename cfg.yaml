@@ -1,34 +1,28 @@
-save_dir: "/home/dcv-user/zhli/ubiquant/game2409/team_game_data/"
-team_id_path: "/home/dcv-user/zhli/ubiquant/game2409/team_id.txt"
+save_dir: "./team_game_data/"
+team_id_path: "./team_id.txt"
 # max times for each team per day
 max_n: 20000
 max_step_seconds: 120
 timeout_penalty: -0.05
+img_dir: '../data_v1024/round0_eval/'
+cls_names: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']
 param1:
   size: 6
-  cls_n: 20
+  cls_n: 21
   max_carry: 999
   elim_n: 3
-  img_dir: '/home/dcv-user/zhli/ubiquant/openset_20241022/dataset/train/'
-  cls_names: [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
 param2:
   size: 12
-  cls_n: 20
+  cls_n: 21
   max_carry: 999
   elim_n: 4
-  img_dir: '/home/dcv-user/zhli/ubiquant/openset_20241022/dataset/train/'
-  cls_names: [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
 param3:
   size: 12
-  cls_n: 20
+  cls_n: 21
   max_carry: 999
   elim_n: 3
-  img_dir: '/home/dcv-user/zhli/ubiquant/openset_20241022/dataset/train/'
-  cls_names: [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
 param4:
   size: 16
-  cls_n: 20
+  cls_n: 21
   max_carry: 999
   elim_n: 4
-  img_dir: '/home/dcv-user/zhli/ubiquant/openset_20241022/dataset/train/'
-  cls_names: [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
