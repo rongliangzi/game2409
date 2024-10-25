@@ -23,6 +23,8 @@ def init_game(team_id, main_cfg, kwargs={}):
             #print('makedirs', game_dir)
             break
     #print(datetime.now(), 'Begin game, ', kwargs)
+    for k in ['img_dir', 'cls_names']:
+        kwargs[k] = main_cfg[k]
     game_env = gym.make('gymnasium_env/GAME', **kwargs)
     obs, info = game_env.reset()
     #print(datetime.now(), 'finish reset')
@@ -39,8 +41,8 @@ def env_step(game_id, main_cfg, action, cls):
         game_env = pickle.load(f)
     #print(datetime.now(), 'finish pickle load')
     cls_penalty = 0
-    if (action == 4) and (game_env.get_current_cls() != -1):
-        correct = cls == game_env.get_current_cls()
+    if (action == 4) and (game_env.unwrapped.get_current_cls() != -1):
+        correct = cls == game_env.unwrapped.get_current_cls()
         if not correct:
             cls_penalty = -0.1
     obs, rew, term, _, info = game_env.step(action)
