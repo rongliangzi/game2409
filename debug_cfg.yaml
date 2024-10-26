@@ -1,0 +1,29 @@
+save_dir: "./team_game_data/"
+team_id_path: "./team_id.txt"
+# max times for each team per day
+max_n: 20000
+max_step_seconds: 120
+timeout_penalty: -0.05
+img_dir: '../data_v1024/round0_eval/'
+cls_names: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']
+init_game_data_dir: '../init_game_data/debug/'
+param1:
+  size: 6
+  cls_n: 21
+  max_carry: 999
+  elim_n: 3
+param2:
+  size: 12
+  cls_n: 21
+  max_carry: 999
+  elim_n: 4
+param3:
+  size: 12
+  cls_n: 21
+  max_carry: 999
+  elim_n: 3
+param4:
+  size: 16
+  cls_n: 21
+  max_carry: 999
+  elim_n: 4
