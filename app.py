@@ -6,7 +6,7 @@ from game_utils import *
 
 app = Flask(__name__)
 
-with open('./debug_cfg.yaml') as f:
+with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 legal_team_id = []
