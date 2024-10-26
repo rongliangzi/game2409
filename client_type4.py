@@ -53,6 +53,16 @@ def check_init_grid(grid, elim_n, cls_n):
         #print(f'{v_}, {v_n}')
 
 
+def modify_grid(grid, cls_n, random_mask):
+    new_grid = grid.copy()
+    for i in range(new_grid.shape[0]):
+        for j in range(new_grid.shape[1]):
+            if new_grid[i, j] in [-1, -1 - (cls_n + 1)]:
+                continue
+            new_grid[i, j] = min(new_grid[i, j] + random_mask[i, j], cls_n-1)
+    return new_grid
+
+
 def team_play_game(team_id, url, begin):
     print('='*40 + f'\nTeam id: {team_id} game begin!!!')
     # grid: grid[i,j] is the cls ground truth of (i,j). After collect, grid[i, j] becomes -1. For agent current loc, grid[i,j]-=cls_n+1
@@ -66,6 +76,7 @@ def team_play_game(team_id, url, begin):
     min_index = np.unravel_index(np.argmin(init_grid), grid.shape)
     init_grid[min_index] += cls_n + 1
     acc = 1.0  # 模拟的识别正确率，在真实grid基础上加1再clip，作为识别错误
+    # 使用方法: new_grid = modify_grid(grid, cls_n, random_mask)
     random_mask = (np.random.uniform(size=grid.shape) >= acc).astype(int)
     cum_score = score
     rounds = 0
