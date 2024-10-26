@@ -4,7 +4,12 @@ Run
 ```
 gunicorn -w 4 -b 0.0.0.0:8081 app:app
 ```
+## daily_stats_team.py
 
+Run py file without any change to get team stats ::yesterday::. 
+```
+python daily_stats_team.py
+```
 ## client_type4.py
 Client demo
 
