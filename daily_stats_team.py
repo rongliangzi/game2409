@@ -7,7 +7,7 @@ import pickle
 
 
 if __name__=="__main__":
-    with open('./debug_cfg.yaml') as f:
+    with open('./cfg/debug_cfg.yaml') as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
     yesterday = datetime.now() - timedelta(days=1)
     yesterday = yesterday.strftime("%Y%m%d")
