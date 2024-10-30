@@ -73,13 +73,19 @@ def check_begin(begin):
     # a~d for action only, 0~9 for full game
     return len(begin) == 6 and all([b in all_game_types for b in begin])
 
+def get_init_grid_loc(cfg, main_cfg, game_type, game_data_id):
+    game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
+    type_dir = game_type_dic.get(game_type, game_type)
+    cfg['init_grid'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'grid.npy')).astype(int)
+    cfg['init_loc'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'loc.npy')).astype(int)
+
 
 def init_game(team_id, main_cfg, begin):
     # init a game from existing game_data
     game_type = begin[0]
     game_data_id = begin[1:]
     print(f'Begin game type {game_type}, team {team_id}')
-    kwargs = main_cfg[f'param{game_type}']
+    env_args = main_cfg[f'param{game_type}']
     os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
     now = datetime.now()
     time_key = now.strftime("%Y%m%d-%H%M%S")
@@ -95,12 +101,11 @@ def init_game(team_id, main_cfg, begin):
         else:
             #print('makedirs', game_dir)
             break
-    #print(datetime.now(), 'Begin game, ', kwargs)
+    #print(datetime.now(), 'Begin game, ', env_args)
     for k in ['img_dir', 'cls_names']:
-        kwargs[k] = main_cfg[k]
-    kwargs['init_grid'] = np.load(os.path.join(main_cfg['init_game_data_dir'], game_type, game_data_id, 'grid.npy')).astype(int)
-    kwargs['init_loc'] = np.load(os.path.join(main_cfg['init_game_data_dir'], game_type, game_data_id, 'loc.npy')).astype(int)
-    game_env = gym.make('gymnasium_env/GAME', **kwargs)
+        env_args[k] = main_cfg[k]
+    get_init_grid_loc(env_args, main_cfg, game_type, game_data_id)
+    game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
     #print(datetime.now(), 'finish reset')
     with open(f'{game_dir}/game_env.pkl', 'wb') as f:
