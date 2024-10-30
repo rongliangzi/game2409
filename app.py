@@ -23,8 +23,8 @@ def process_team_post(data, team_id):
             return f'Team {team_id} has run out of game time {main_cfg["max_n"]}', 403
         if not check_begin(data['begin']):
             return f'Illegal begin', 400
-        img, bag, grid, game_id = init_game(team_id, main_cfg, data['begin'])
-        return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid})
+        img, bag, grid, loc, game_id = init_game(team_id, main_cfg, data['begin'])
+        return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid, 'loc': loc})
     else:
         # continue existing game, game_id, action, cls
         game_id = data.get('game_id', None)  # str
@@ -42,10 +42,10 @@ def process_team_post(data, team_id):
         info, code = check_step_data(game_id, game_dir, action, cls, grid_cls)
         if len(info) > 0:
             return info, code
-        bag, grid, score, is_end = env_step(game_id, main_cfg, action, cls, grid_cls)
+        bag, grid, loc, score, is_end = env_step(game_id, main_cfg, action, cls, grid_cls)
         score += get_time_penalty(time_diff, main_cfg, game_id)
         update_game_result(game_dir, score)
-        result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid}
+        result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid, 'loc': loc}
         return jsonify(result)
 
 
