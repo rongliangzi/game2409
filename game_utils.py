@@ -5,6 +5,10 @@ import gymnasium_env
 import pickle
 import numpy as np
 
+action_only_game_types = ['a', 'b', 'c', 'd']
+full_game_types = [str(i) for i in range(10)]
+all_game_types = action_only_game_types + full_game_types
+
 
 def gen_game_result(game_dir, begin):
     # generate game result when initing a game
@@ -12,16 +16,15 @@ def gen_game_result(game_dir, begin):
         pickle.dump({'cum_score': 0, 'begin': begin, 'rounds': 0, 'acc': None}, f)
 
 
-def update_acc_if_need(grid_cls, init_grid, game_dir):
+def update_acc_if_need(game_result, grid_pred, init_grid, game_dir):
     # calculate cls acc only when on step=1, update game_result
-    with open(f'{game_dir}/game_result.pkl', 'rb') as f:
-        game_result = pickle.load(f)
-    if game_result['rounds'] == 0:
-        grid_cls = np.array(grid_cls, dtype=int)
-        acc = (grid_cls == init_grid).sum() / init_grid.size
+    if (game_result['rounds'] == 0) and (game_result['begin'][0] in full_game_types):
+        grid_pred = np.array(grid_pred, dtype=int)
+        acc = (grid_pred == init_grid).sum() / init_grid.size
         game_result['acc'] = acc
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump(game_result, f)
+        np.save(f'{game_dir}/grid_pred.npy', grid_pred)
 
 
 def update_game_result(game_dir, score):
@@ -42,7 +45,7 @@ def get_time_penalty(time_diff, main_cfg, game_id):
     return 0
 
 
-def check_step_data(game_id, game_dir, action, cls, grid_cls):
+def check_step_data(game_id, game_dir, action, cls, grid_pred):
     # check data from client if legal
     if game_id is None:
         return 'Game id not found', 400
@@ -54,7 +57,7 @@ def check_step_data(game_id, game_dir, action, cls, grid_cls):
         return 'Cls data cannot be None', 401
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
-    if (game_result['rounds'] == 0) and (grid_cls is None):
+    if (game_result['rounds'] == 0) and (grid_pred is None):
         return 'Grid_cls not provided', 400
     return '', 200
 
@@ -67,7 +70,8 @@ def save_step_time(game_dir):
 
 def check_begin(begin):
     # check beging legal
-    return len(begin) == 6 and all(['0'<=b<='9' for b in begin])
+    # a~d for action only, 0~9 for full game
+    return len(begin) == 6 and all([b in all_game_types for b in begin])
 
 
 def init_game(team_id, main_cfg, begin):
@@ -104,7 +108,9 @@ def init_game(team_id, main_cfg, begin):
     #print(datetime.now(), 'finish dump game_env')
     gen_game_result(game_dir, begin)
     save_step_time(game_dir)
-    return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), game_id
+    if game_type in full_game_types:
+        obs['grid'] = 0
+    return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), game_id
 
 
 def get_cls_penalty(action, label_cls, cls):
@@ -114,25 +120,37 @@ def get_cls_penalty(action, label_cls, cls):
     return 0
 
 
-def env_step(game_id, main_cfg, action, cls, grid_cls):
+def update_grid_if_need(grid, game_result, game_dir):
+    # for full game, using prediction as grid
+    if game_result['begin'][0] in action_only_game_types:
+        return grid
+    new_grid = np.load(f'{game_dir}/grid_pred.npy')
+    new_grid[np.argwhere(grid==-1)] = -1
+    new_grid[np.argmin(grid)] = np.min(grid)
+    return new_grid
+
+
+def env_step(game_id, main_cfg, action, cls, grid_pred):
     # update env, send new data to client
     #print(datetime.now(), 'begin env_step')
     game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
     with open(f'{game_dir}/game_env.pkl', 'rb') as f:
         game_env = pickle.load(f)
-    update_acc_if_need(grid_cls, game_env.unwrapped.get_init_grid(), game_dir)
+    with open(f'{game_dir}/game_result.pkl', 'rb') as f:
+        game_result = pickle.load(f)
+    update_acc_if_need(game_result, grid_pred, game_env.unwrapped.get_init_grid(), game_dir)
     #print(datetime.now(), 'finish pickle load')
     cls_penalty = get_cls_penalty(action, game_env.unwrapped.get_current_cls(), cls)
     obs, rew, term, _, info = game_env.step(action)
     #print(datetime.now(), 'finish step')
     # since acc is logged, penalty is ignored here
-    # rew += cls_penalty
+    rew += cls_penalty
     with open(f'{game_dir}/game_env.pkl', 'wb') as f:
         pickle.dump(game_env, f)
-    #print(datetime.now(), 'finish pickle dump')
     if term:
         with open(f'{game_dir}/finish.txt', 'w') as f:
             f.write('finish')
     #print(datetime.now(), 'end env_step')
     save_step_time(game_dir)
-    return obs['bag'].tolist(), obs['grid'].tolist(), rew, term
+    grid = update_grid_if_need(obs['grid'], game_result, game_dir)
+    return obs['bag'].tolist(), grid, obs['loc'].tolist(), rew, term
