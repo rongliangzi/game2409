@@ -57,7 +57,7 @@ def check_step_data(game_id, game_dir, action, cls, grid_pred):
         return 'Cls data cannot be None', 401
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
-    if (game_result['rounds'] == 0) and (grid_pred is None):
+    if (game_result['rounds'] == 0) and (grid_pred is None) and (game_result['begin'][0] in full_game_types):
         return 'Grid_cls not provided', 400
     return '', 200
 
@@ -73,9 +73,7 @@ def check_begin(begin):
     # a~d for action only, 0~9 for full game
     return len(begin) == 6 and all([b in all_game_types for b in begin])
 
-def get_init_grid_loc(cfg, main_cfg, game_type, game_data_id):
-    game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
-    type_dir = game_type_dic.get(game_type, game_type)
+def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
     cfg['init_grid'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'grid.npy')).astype(int)
     cfg['init_loc'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'loc.npy')).astype(int)
 
@@ -83,9 +81,11 @@ def get_init_grid_loc(cfg, main_cfg, game_type, game_data_id):
 def init_game(team_id, main_cfg, begin):
     # init a game from existing game_data
     game_type = begin[0]
+    game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
+    param_type = type_dir = game_type_dic.get(game_type, game_type)
     game_data_id = begin[1:]
     print(f'Begin game type {game_type}, team {team_id}')
-    env_args = main_cfg[f'param{game_type}']
+    env_args = main_cfg[f'param{param_type}']
     os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
     now = datetime.now()
     time_key = now.strftime("%Y%m%d-%H%M%S")
@@ -104,7 +104,7 @@ def init_game(team_id, main_cfg, begin):
     #print(datetime.now(), 'Begin game, ', env_args)
     for k in ['img_dir', 'cls_names']:
         env_args[k] = main_cfg[k]
-    get_init_grid_loc(env_args, main_cfg, game_type, game_data_id)
+    get_init_grid_loc(env_args, main_cfg, type_dir, game_data_id)
     game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
     #print(datetime.now(), 'finish reset')
@@ -114,7 +114,7 @@ def init_game(team_id, main_cfg, begin):
     gen_game_result(game_dir, begin)
     save_step_time(game_dir)
     if game_type in full_game_types:
-        obs['grid'] = 0
+        obs['grid'] *= 0
     return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), game_id
 
 
@@ -130,8 +130,9 @@ def update_grid_if_need(grid, game_result, game_dir):
     if game_result['begin'][0] in action_only_game_types:
         return grid
     new_grid = np.load(f'{game_dir}/grid_pred.npy')
-    new_grid[np.argwhere(grid==-1)] = -1
-    new_grid[np.argmin(grid)] = np.min(grid)
+    new_grid[grid==-1] = -1
+    min_pos = np.unravel_index(np.argmin(grid), grid.shape)
+    new_grid[min_pos] = np.min(grid)
     return new_grid
 
 
@@ -158,4 +159,4 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     #print(datetime.now(), 'end env_step')
     save_step_time(game_dir)
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
-    return obs['bag'].tolist(), grid, obs['loc'].tolist(), rew, term
+    return obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), rew, term
