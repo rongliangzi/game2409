@@ -130,10 +130,8 @@ if __name__ == "__main__":
     params = [(12, 21, 4), (12, 21, 3), (16, 21, 4), (20, 21, 5), (20, 21, 4)]
     game_data_dir = '../init_game_data/debug/'
     for i, (size, cls_n, elim_n) in enumerate(params):
-        if size <20:
-            continue
         print(size, cls_n, elim_n)
-        for j in range(90000):
+        for j in range(10000):
             grid, loc = init_grid_loc(size, cls_n, elim_n)
             cur_dir = game_data_dir + f'{i+2}/{j:05}/'
             os.makedirs(cur_dir, exist_ok=True)
