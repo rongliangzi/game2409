@@ -39,7 +39,10 @@ def update_game_result(game_dir, score):
 
 def get_time_penalty(time_diff, main_cfg, game_id):
     # calculate timeout penalty
-    if time_diff > float(main_cfg['max_step_seconds']):
+    if time_diff > 2*float(main_cfg['max_step_seconds']):
+        print(f"{game_id}, time_diff:{time_diff:.3f}, max_step_seconds:{float(main_cfg['max_step_seconds']):.1f}")
+        return main_cfg['timeout_penalty'] * 10
+    elif time_diff > float(main_cfg['max_step_seconds']):
         print(f"{game_id}, time_diff:{time_diff:.3f}, max_step_seconds:{float(main_cfg['max_step_seconds']):.1f}")
         return main_cfg['timeout_penalty']
     return 0
