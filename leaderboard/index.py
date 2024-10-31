@@ -3,22 +3,22 @@ import pandas as pd
 
 app = Flask(__name__)
 
+# 读取CSV文件
+# df = pd.read_csv('score.csv', index_col =0)
 df = pd.read_csv('../team_game_data/20241029/daily_stats.csv',)
 df.columns = ['teamid', 'idx', 'cum_score','begin', 'rounds','acc']
-df = df[['teamid','cum_score','acc']]                                                                                     
-df = df.groupby('teamid').mean()                                                                                          
+df = df[['teamid','cum_score','acc']]
+df = df.groupby('teamid').mean()
 df = df.reset_index()
-df = df.sort_values(by='cum_score', ascending=False, inplace=False)
-#     teamid  cum_score       acc
-#     0   ferrari  -4.164640  0.994213
-#     1  maserati -16.548700  0.006432
-#     2    xiaomi -20.444871  1.000000
+df.loc[0, 'teamid'] = '红鲤鱼与绿鲤鱼与驴'
 
 
 @app.route('/')
 def index():
+    # 将CSV数据传递到HTML模板
     teams = df.to_dict(orient='records')
+#     print(teams)
     return render_template('index.html', teams=teams)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(debug=True)

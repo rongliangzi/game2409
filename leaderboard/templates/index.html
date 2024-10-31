@@ -41,6 +41,11 @@
             font-size: 18px;
             font-weight: bold;
         }
+        .acc {
+            max-width: 30px; 
+            font-size: 18px;
+            font-weight: bold;
+        }
         .table-wrapper {
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
@@ -73,6 +78,7 @@
                     <th>rank</th>
                     <th>teamid</th>
                     <th>cum_score</th>
+                    <th>acc</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,6 +97,7 @@
 					</td>
                     <td class="teamid">{{ team['teamid'] }}</td>
                     <td class="score">{{ team['cum_score'] | round(2) }}</td>
+                    <td class="acc">{{ team['acc'] | round(2) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -102,4 +109,3 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
-
