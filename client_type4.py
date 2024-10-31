@@ -1,9 +1,6 @@
 import requests
 import numpy as np
 import time
-import matplotlib
-matplotlib.rcParams['toolbar'] = 'None'
-import matplotlib.pyplot as plt
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -34,50 +31,51 @@ def send_recv(url, data):
             bag = np.array(json_response.get('bag'), dtype=np.int32)
             grid = np.array(json_response.get('grid'), dtype=np.int32)
             game_id = json_response.get('game_id')
-            return is_end, score, img, bag, grid, game_id
+            loc = tuple(json_response.get('loc'))
+            return is_end, score, img, bag, grid, loc, game_id
         else:
             print(f'Response invalid. {response.text}, Status code: {response.status_code}')
-            return None, None, None, None, None, None
+            return None, None, None, None, None, None, None
     except Exception as e:
         print(f'Error occurred: {e}')
-        return None, None, None, None, None, None
-    
-
-def check_init_grid(grid, elim_n, cls_n):
-    v = np.unique(grid)
-    for v_ in v:
-        if v_ < 0:
-            continue
-        v_n = (grid == v_).sum() + (grid == v_-(cls_n+1)).sum()
-        assert v_n % elim_n ==0, f'{v_}, {v_n}, elim_n: {elim_n}'
-        #print(f'{v_}, {v_n}')
+        return None, None, None, None, None, None, None
 
 
 def modify_grid(grid, cls_n, random_mask):
+    # if modify, 0 => 1, 1 => 2, cls_n-1 => 0
+    # if modify, -cls_n-1 => -cls_n, -cls_n => -cls_n+1, -2 => -cls_n-1
     new_grid = grid.copy()
     for i in range(new_grid.shape[0]):
         for j in range(new_grid.shape[1]):
             if new_grid[i, j] in [-1, -1 - (cls_n + 1)]:
                 continue
-            new_grid[i, j] = min(new_grid[i, j] + random_mask[i, j], cls_n-1)
+            if new_grid[i, j] >=0:
+                new_grid[i, j] = (new_grid[i, j] + random_mask[i, j]) % (cls_n)
+            else:
+                new_grid[i, j] = new_grid[i, j] + random_mask[i, j]
+                if new_grid[i, j] == -1:
+                    new_grid[i, j] = -cls_n-1
     return new_grid
 
 
+def recognition(img, cls_n, shape):
+    return np.random.randint(0, cls_n, size=shape)
+    
+    
 def team_play_game(team_id, url, begin):
     print('='*40 + f'\nTeam id: {team_id} game begin!!!')
     # grid: grid[i,j] is the cls ground truth of (i,j). After collect, grid[i, j] becomes -1. For agent current loc, grid[i,j]-=cls_n+1
     cls_n = 21
-    is_end, score, init_img, bag, grid, game_id = send_recv(url, {'team_id': team_id, 'begin': begin, })
-    
+    is_end, score, init_img, bag, grid, loc, game_id = send_recv(url, {'team_id': team_id, 'begin': begin, })
     if is_end is None:
         return None, None
-    #check_init_grid(grid, 3, cls_n)
-    init_grid = grid.copy()
-    min_index = np.unravel_index(np.argmin(init_grid), grid.shape)
-    init_grid[min_index] += cls_n + 1
-    acc = 1.0  # 模拟的识别正确率，在真实grid基础上加1再clip，作为识别错误
-    # 使用方法: new_grid = modify_grid(grid, cls_n, random_mask)
-    random_mask = (np.random.uniform(size=grid.shape) >= acc).astype(int)
+    action_only = begin[0] in ['a', 'b', 'c', 'd', 'e']
+    acc = 0.85  # 模拟的识别正确率，在真实grid基础上加1再clip，作为识别错误
+    if action_only:
+        # 使用方法: new_grid = modify_grid(grid, cls_n, random_mask)
+        random_mask = (np.random.uniform(size=grid.shape) >= acc).astype(int)
+    else:
+        cls_pred = recognition(init_img, cls_n, grid.shape)
     cum_score = score
     rounds = 0
     game_fig_dir = f'./game_fig/{game_id}/'
@@ -85,18 +83,25 @@ def team_play_game(team_id, url, begin):
     assert init_img is not None
     #plt.imsave(f'{game_fig_dir}/rounds{rounds}.png', init_img)
     while (is_end is not None) and (not is_end):
-        #print(is_end, score, game_id)
         # take an act
-        rounds += 1
         # action: 0: down, 1: right, 2: up, 3: left, 4: collect
         # cls: when take action 4, server will judge if cls is the same as grid[i,j], if wrong, score += -0.1
-        action = random_policy(5)
-        action = greedy_policy(grid, bag, cls_n=cls_n, random_mask=random_mask)
-        cls = int(grid.min() + cls_n + 1)
-        data = {'game_id': game_id, 'action': action, 'cls': cls, 'team_id': team_id, 'grid_cls': init_grid.tolist()}
-        print(f'{game_id}, rounds: {rounds}, action: {data["action"]}, current score: {score:.3f}, cum_score: {cum_score:.3f}')
+        
+        if action_only:
+            action = greedy_policy(modify_grid(grid, cls_n, random_mask), loc, bag, cls_n=cls_n)
+        else:
+            action = random_policy(5)
+        data = {'game_id': game_id, 'action': action, 'team_id': team_id}
+        if rounds == 0 and not action_only:
+            data['grid_cls'] = cls_pred.tolist()
+        if action == 4:
+            data['cls'] = int(grid[loc])
+            if data['cls'] < -1:
+                data['cls'] += cls_n + 1
+        #print(f'{game_id}, rounds: {rounds}, action: {action}, current score: {score:.3f}, cum_score: {cum_score:.3f}')
+        rounds += 1
         # transition to new status
-        is_end, score, _, bag, grid, game_id_ = send_recv(url, data)
+        is_end, score, _, bag, grid, loc, game_id_ = send_recv(url, data)
         cum_score += score
         assert game_id == game_id_, f'{game_id}, {game_id_}'
     #print(f'Team id: {team_id} game id {game_id} end, score: {cum_score:.3f}\n')
@@ -107,17 +112,19 @@ if __name__=="__main__":
     team_play_game('toyota', url, '300000')
     team_id = 'xiaomi'
     # begin must be {game_type}{game_data_id}
-    # 1: {size:6, cls_n:21, elim_n:3}, not used for now
-    # 2: {size:12, cls_n:21, elim_n:4}
-    # 3: {size:12, cls_n:21, elim_n:3}
-    # 4: {size:16, cls_n:21, elim_n:4}
-    # 5: {size:20, cls_n:21, elim_n:5}
-    # 6: {size:20, cls_n:21, elim_n:4}
-    game_type = '3'
-    game_n = 5
+    # a~e for action_only, 2~6 for full game
+    # for action only, grid is always ground truth
+    # for full game, grid on step=0 is all 0, then client return a prediction. Afterwards, grid is pred
+    # '2', 'a: {size:12, cls_n:21, elim_n:4}
+    # '3', 'b': {size:12, cls_n:21, elim_n:3}
+    # '4', 'c': {size:16, cls_n:21, elim_n:4}
+    # '5', 'd': {size:20, cls_n:21, elim_n:5}
+    # '6', 'e': {size:20, cls_n:21, elim_n:4}
+    game_type = 'b'
+    game_n = 50
     stats = dict()
     st = time.time()
-    with ProcessPoolExecutor(max_workers=1) as executor:
+    with ProcessPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(team_play_game, team_id, url, f'{game_type}{game_i:05}') for game_i in range(game_n)]
         for future in as_completed(futures):
             game_id, cum_score = future.result()
