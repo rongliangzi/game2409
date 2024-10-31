@@ -12,13 +12,16 @@ param2:
   cls_n: 21
   max_carry: 999
   elim_n: 4
+  max_steps_k: 4
 param3:
   size: 12
   cls_n: 21
   max_carry: 999
   elim_n: 3
+  max_steps_k: 4
 param4:
   size: 16
   cls_n: 21
   max_carry: 999
   elim_n: 4
+  max_steps_k: 4
