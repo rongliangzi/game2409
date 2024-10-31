@@ -8,6 +8,7 @@ import numpy as np
 action_only_game_types = ['a', 'b', 'c', 'd']
 full_game_types = [str(i) for i in range(10)]
 all_game_types = action_only_game_types + full_game_types
+game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
 
 
 def gen_game_result(game_dir, begin):
@@ -71,10 +72,19 @@ def save_step_time(game_dir):
         f.write(datetime.now().strftime('%Y%m%d %H%M%S.%f'))
 
 
-def check_begin(begin):
-    # check beging legal
+def check_begin(main_cfg, begin):
+    # check begin legal
     # a~d for action only, 0~9 for full game
-    return len(begin) == 6 and all([b in all_game_types for b in begin])
+    if not ((len(begin) == 6) and (begin[0] in all_game_types) and (all(['0'<=b<='9' for b in begin[1:]]))):
+        return False
+    # check if init game data exists
+    game_type = begin[0]
+    type_dir = game_type_dic.get(game_type, game_type)
+    game_data_id = begin[1:]
+    grid_path = os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'grid.npy')
+    loc_path = os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'loc.npy')
+    return os.path.exists(grid_path) and os.path.exists(loc_path)
+
 
 def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
     cfg['init_grid'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'grid.npy')).astype(int)
@@ -84,7 +94,6 @@ def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
 def init_game(team_id, main_cfg, begin):
     # init a game from existing game_data
     game_type = begin[0]
-    game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
     param_type = type_dir = game_type_dic.get(game_type, game_type)
     game_data_id = begin[1:]
     print(f'Begin game type {game_type}, team {team_id}')
