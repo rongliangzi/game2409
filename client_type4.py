@@ -7,8 +7,9 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from policy import *
 
 
-url = 'http://52.81.28.203:8081/'
 url = 'http://69.230.243.237:8081/'
+url = 'http://52.82.16.74:8081/'
+
 
 def random_policy(action_shape):
     return np.random.randint(action_shape)
