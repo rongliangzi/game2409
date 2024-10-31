@@ -150,7 +150,7 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     obs, rew, term, _, info = game_env.step(action)
     #print(datetime.now(), 'finish step')
     # since acc is logged, penalty is ignored here
-    rew += cls_penalty
+    #rew += cls_penalty
     with open(f'{game_dir}/game_env.pkl', 'wb') as f:
         pickle.dump(game_env, f)
     if term:
