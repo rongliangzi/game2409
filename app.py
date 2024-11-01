@@ -9,10 +9,7 @@ app = Flask(__name__)
 with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
-legal_team_id = []
-with open(main_cfg["team_id_path"]) as f:
-    for l in f.readlines():
-        legal_team_id.append(l.strip())
+legal_team_id = read_team_id_txt(main_cfg['team_id_path'])
 print('team_id:', legal_team_id)
 
 
@@ -56,7 +53,7 @@ def handle_client():
         team_id = data.get('team_id', None)
         if team_id is None:
             return "team_id is none", 403
-        elif team_id in legal_team_id:
+        elif team_id in legal_team_id.keys():
             return process_team_post(data, team_id)
         else:
             print(f'team_id:{team_id} illegal')

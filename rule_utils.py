@@ -4,6 +4,18 @@ import numpy as np
 import fcntl
 
 
+def read_team_id_txt(team_id_path):
+    # line in txt has format: {team_id}: {team_name}
+    legal_team_id = dict()
+    with open(team_id_path) as f:
+        for l in f.readlines():
+            if ': ' not in l:
+                continue
+            team_id, team_name = l.strip().split(': ')
+            legal_team_id[team_id] = team_name
+    return legal_team_id
+
+
 def lock_rw_txt(fpath, max_n):
     # not exist: create, write 1, return 0
     # count >= max_n, not change, return count
