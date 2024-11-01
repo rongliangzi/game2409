@@ -91,16 +91,8 @@ def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
     cfg['init_loc'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'loc.npy')).astype(int)
 
 
-def init_game(team_id, main_cfg, begin):
-    # init a game from existing game_data
-    game_type = begin[0]
-    param_type = type_dir = game_type_dic.get(game_type, game_type)
-    game_data_id = begin[1:]
-    print(f'Begin game type {game_type}, team {team_id}')
-    env_args = main_cfg[f'param{param_type}']
-    os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
-    now = datetime.now()
-    time_key = now.strftime("%Y%m%d-%H%M%S")
+def get_game_id_dir(main_cfg, team_id, time_key):
+    # in case of multi requests at the same time
     game_id = f'{team_id}_{time_key}'
     game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
     while True:
@@ -113,7 +105,21 @@ def init_game(team_id, main_cfg, begin):
         else:
             #print('makedirs', game_dir)
             break
+    return game_id, game_dir
+
+
+def init_game(team_id, main_cfg, begin):
+    # init a game from existing game_data
+    game_type = begin[0]
+    param_type = type_dir = game_type_dic.get(game_type, game_type)
+    game_data_id = begin[1:]
+    print(f'Begin game type {game_type}, team {team_id}')
+    env_args = main_cfg[f'param{param_type}']
+    os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
+    now = datetime.now()
+    time_key = now.strftime("%Y%m%d-%H%M%S")
     #print(datetime.now(), 'Begin game, ', env_args)
+    game_id, game_dir = get_game_id_dir(main_cfg, team_id, time_key)
     for k in ['img_dir', 'cls_names']:
         env_args[k] = main_cfg[k]
     get_init_grid_loc(env_args, main_cfg, type_dir, game_data_id)
