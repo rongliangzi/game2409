@@ -4,3 +4,6 @@ porsche: niujiahe
 ferrari: lizehan
 lambogini: xili
 xiaomi: rongliangzi
+emira: nanjiafan
+bentley: rongliangzi
+mclaren: rongliangzi
