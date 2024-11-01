@@ -16,7 +16,7 @@ print('team_id:', legal_team_id)
 def process_team_post(data, team_id):
     # check team id legal
     if data.get('begin', None):
-        if not check_connections(team_id, main_cfg):
+        if not check_connections(team_id, main_cfg, data.get('refresh', False)):
             return f'Team {team_id} has reached max connections: {main_cfg["team_max_connections"]}', 400
         if not begin_if_can(team_id, main_cfg):
             return f'Team {team_id} has run out of game time {main_cfg["max_n"]}', 400

@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 import numpy as np
 import fcntl
+import shutil
+import time
 
 
 def read_team_id_txt(team_id_path):
@@ -32,10 +34,26 @@ def lock_rw_txt(fpath, max_n):
         fcntl.flock(f, fcntl.LOCK_UN)
         return count
 
-def check_connections(team_id, cfg):
+def check_connections(team_id, cfg, refresh=False):
     # check if current connection reach up limit
     connect_fpath = os.path.join(cfg['save_dir'], team_id, 'connections.txt')
+    if refresh:
+        #  remove all unfinished games before and clear connections
+        try:
+            st = time.time()
+            os.remove(connect_fpath)
+            game_dir = os.listdir(os.path.join(cfg['save_dir'], team_id))
+            for gd in game_dir:
+                cur_dir = os.path.join(cfg['save_dir'], team_id, gd)
+                if not os.path.exists(os.path.join(cur_dir, 'finish.txt')):
+                    shutil.rmtree(cur_dir)
+            print(f'Finish refresh, time:{time.time()-st:.1f}s')
+        except Exception as e:
+            print(f'Exception {e} when remove {connect_fpath}')
+        finally:
+            pass
     connect_n = lock_rw_txt(connect_fpath, cfg['team_max_connections'])
+    print(team_id, 'connection_n', connect_n)
     return connect_n < cfg['team_max_connections']
 
 
