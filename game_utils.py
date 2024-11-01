@@ -171,17 +171,20 @@ def lock_minus_txt(fpath):
 
 def env_step(game_id, main_cfg, action, cls, grid_pred):
     # update env, send new data to client
-    #print(datetime.now(), 'begin env_step')
+    if game_id.startswith('bentley'):
+        print(datetime.now(), 'begin env_step')
     game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
     with open(f'{game_dir}/game_env.pkl', 'rb') as f:
         game_env = pickle.load(f)
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
     update_acc_if_need(game_result, grid_pred, game_env.unwrapped.get_init_grid(), game_dir)
-    #print(datetime.now(), 'finish pickle load')
+    if game_id.startswith('bentley'):
+        print(datetime.now(), 'finish pickle load')
     cls_penalty = get_cls_penalty(action, game_env.unwrapped.get_current_cls(), cls)
     obs, rew, term, _, info = game_env.step(action)
-    #print(datetime.now(), 'finish step')
+    if game_id.startswith('bentley'):
+        print(datetime.now(), 'finish step')
     # since acc is logged, penalty is ignored here
     #rew += cls_penalty
     with open(f'{game_dir}/game_env.pkl', 'wb') as f:
@@ -191,7 +194,8 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
             f.write('finish')
         # release a connection
         lock_minus_txt(os.path.join(main_cfg['save_dir'], game_id.split('_')[0], 'connections.txt'))
-    #print(datetime.now(), 'end env_step')
+    if game_id.startswith('bentley'):
+        print(datetime.now(), 'end env_step')
     save_step_time(game_dir)
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
     return obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), rew, term
