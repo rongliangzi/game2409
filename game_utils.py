@@ -57,8 +57,8 @@ def check_step_data(game_id, game_dir, action, cls, grid_pred):
         return 'Game has finished', 400
     if action is None:
         return 'Action cannot be None', 400
-    if (action == 4) and (cls is None):
-        return 'Cls data cannot be None', 401
+    #if (action == 4) and (cls is None):
+    #    return 'Cls data cannot be None', 401
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
     if (game_result['rounds'] == 0) and (grid_pred is None) and (game_result['begin'][0] in full_game_types):
