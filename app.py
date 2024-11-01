@@ -10,7 +10,7 @@ with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 legal_team_id = read_team_id_txt(main_cfg['team_id_path'])
-print('team_id:', legal_team_id)
+#print('team_id:', legal_team_id)
 
 
 def process_team_post(data, team_id):
@@ -32,7 +32,7 @@ def process_team_post(data, team_id):
             return 'Game id must be provided', 400
         game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
         if not os.path.exists(game_dir):
-            return 'Game id does not exist', 400
+            return 'Game id does not exist, check if you set refresh correctly', 400
         with open(f'{game_dir}/last_step_time.txt', 'r') as f:
             last_step_time = datetime.strptime(f.readlines()[0].strip(), '%Y%m%d %H%M%S.%f')
         time_diff = (datetime.now() - last_step_time).total_seconds()
