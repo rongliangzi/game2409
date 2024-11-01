@@ -35,6 +35,8 @@ def lock_rw_txt(fpath, max_n):
 
 def begin_if_can(team_id, cfg):
     # check if team_id has run out game time, update txt
+    if team_id == 'public':
+        return True
     now = datetime.now()
     yymmdd = now.strftime("%Y%m%d")
     day_dir = os.path.join(cfg['save_dir'], yymmdd)
