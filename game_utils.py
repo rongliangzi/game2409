@@ -16,7 +16,7 @@ game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
 def gen_game_result(game_dir, begin):
     # generate game result when initing a game
     with open(f'{game_dir}/game_result.pkl', 'wb') as f:
-        pickle.dump({'cum_score': 0, 'begin': begin, 'rounds': 0, 'acc': None}, f)
+        pickle.dump({'cum_score': 0, 'begin': begin, 'rounds': 0, 'acc': None, 'time_itv': []}, f)
 
 
 def update_acc_if_need(game_result, grid_pred, init_grid, game_dir):
@@ -30,12 +30,13 @@ def update_acc_if_need(game_result, grid_pred, init_grid, game_dir):
         np.save(f'{game_dir}/grid_pred.npy', grid_pred)
 
 
-def update_game_result(game_dir, score):
+def update_game_result(game_dir, score, itv):
     # update cum_score, rounds on every step
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
         game_result['cum_score'] += score
         game_result['rounds'] += 1
+        game_result['time_itv'].append(itv)
     with open(f'{game_dir}/game_result.pkl', 'wb') as f:
         pickle.dump(game_result, f)
 
@@ -198,8 +199,8 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
         # release a connection
         lock_minus_txt(os.path.join(main_cfg['save_dir'], game_id.split('_')[0], 'connections.txt'))
     time_str += f'{datetime.now()} end env_step\n'
-    save_step_time(game_dir)
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
+    save_step_time(game_dir)
     if time.time() - st > 1:
         print('Env step too long time {game_id}\n', time_str)
     return obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), rew, term

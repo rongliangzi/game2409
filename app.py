@@ -39,7 +39,7 @@ def process_team_post(data, team_id):
             return 'Game id does not exist, check if you set refresh correctly', 400
         with open(f'{game_dir}/last_step_time.txt', 'r') as f:
             last_step_time = datetime.strptime(f.readlines()[0].strip(), '%Y%m%d %H%M%S.%f')
-        time_diff = (datetime.now() - last_step_time).total_seconds()
+        interval = (datetime.now() - last_step_time).total_seconds()
         action = data.get('action', None)
         cls = data.get('cls', None)
         grid_cls = data.get('grid_cls', None)
@@ -47,8 +47,9 @@ def process_team_post(data, team_id):
         if len(info) > 0:
             return info, code
         bag, grid, loc, score, is_end = env_step(game_id, main_cfg, action, cls, grid_cls)
-        score += get_time_penalty(time_diff, main_cfg, game_id)
-        update_game_result(game_dir, score)
+        # use interval median instead
+        # score += get_time_penalty(interval, main_cfg, game_id)
+        update_game_result(game_dir, score, interval)
         result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid, 'loc': loc}
         if time.time() - st > 1:
             print('Env step too long time {game_id}')
