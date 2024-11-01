@@ -15,6 +15,7 @@ print('team_id:', legal_team_id)
 
 def process_team_post(data, team_id):
     # check team id legal
+    os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
     if data.get('begin', None):
         if not check_connections(team_id, main_cfg, data.get('refresh', False)):
             return f'Team {team_id} has reached max connections: {main_cfg["team_max_connections"]}', 400

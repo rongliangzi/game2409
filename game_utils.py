@@ -116,7 +116,6 @@ def init_game(team_id, main_cfg, begin):
     game_data_id = begin[1:]
     print(f'Begin game type {game_type}, team {team_id}')
     env_args = main_cfg[f'param{param_type}']
-    os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
     now = datetime.now()
     time_key = now.strftime("%Y%m%d-%H%M%S")
     #print(datetime.now(), 'Begin game, ', env_args)
