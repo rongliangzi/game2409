@@ -101,7 +101,7 @@ def get_game_id_dir(main_cfg, team_id, time_key):
         try:
             os.makedirs(game_dir, exist_ok=False)
         except OSError as e:
-            print(e, 'add a to game_id')
+            #print(e, 'add a to game_id')
             game_id = game_id +'a'
             game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
         else:
@@ -112,28 +112,32 @@ def get_game_id_dir(main_cfg, team_id, time_key):
 
 def init_game(team_id, main_cfg, begin):
     # init a game from existing game_data
+    time_str = ''
+    st = time.time()
     game_type = begin[0]
     param_type = type_dir = game_type_dic.get(game_type, game_type)
     game_data_id = begin[1:]
-    print(f'Begin game type {game_type}, team {team_id}')
+    #print(f'Begin game type {game_type}, team {team_id}')
     env_args = main_cfg[f'param{param_type}']
     now = datetime.now()
     time_key = now.strftime("%Y%m%d-%H%M%S")
-    #print(datetime.now(), 'Begin game, ', env_args)
+    time_str += f'{datetime.now()}, Begin game'
     game_id, game_dir = get_game_id_dir(main_cfg, team_id, time_key)
     for k in ['img_dir', 'cls_names']:
         env_args[k] = main_cfg[k]
     get_init_grid_loc(env_args, main_cfg, type_dir, game_data_id)
     game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
-    #print(datetime.now(), 'finish reset')
+    time_str += f'{datetime.now()}, finish reset'
     with open(f'{game_dir}/game_env.pkl', 'wb') as f:
         pickle.dump(game_env, f)
-    #print(datetime.now(), 'finish dump game_env')
+    time_str += f'{datetime.now()}, finish dump game_env'
     gen_game_result(game_dir, begin)
     save_step_time(game_dir)
     if game_type in full_game_types:
         obs['grid'] *= 0
+    if time.time() - st > 1:
+        print('Env init too long time {game_id}\n', time_str)
     return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), game_id
 
 
@@ -196,6 +200,6 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     time_str += f'{datetime.now()} end env_step\n'
     save_step_time(game_dir)
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
-    if time.time() - st > 2:
-        print('Too long time {game_id}\n', time_str)
+    if time.time() - st > 1:
+        print('Env step too long time {game_id}\n', time_str)
     return obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), rew, term
