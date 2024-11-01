@@ -16,10 +16,12 @@ print('team_id:', legal_team_id)
 def process_team_post(data, team_id):
     # check team id legal
     if data.get('begin', None):
+        if not check_connections(team_id, main_cfg):
+            return f'Team {team_id} has reached max connections: {main_cfg["team_max_connections"]}', 400
         if not begin_if_can(team_id, main_cfg):
-            return f'Team {team_id} has run out of game time {main_cfg["max_n"]}', 403
+            return f'Team {team_id} has run out of game time {main_cfg["max_n"]}', 400
         if not check_begin(main_cfg, data['begin']):
-            return f'Illegal begin', 400
+            return f'Illegal game_type game_id param', 400
         img, bag, grid, loc, game_id = init_game(team_id, main_cfg, data['begin'])
         return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid, 'loc': loc})
     else:

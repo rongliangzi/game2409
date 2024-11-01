@@ -32,6 +32,12 @@ def lock_rw_txt(fpath, max_n):
         fcntl.flock(f, fcntl.LOCK_UN)
         return count
 
+def check_connections(team_id, cfg):
+    # check if current connection reach up limit
+    connect_fpath = os.path.join(cfg['save_dir'], team_id, 'connections.txt')
+    connect_n = lock_rw_txt(connect_fpath, cfg['team_max_connections'])
+    return connect_n < cfg['team_max_connections']
+
 
 def begin_if_can(team_id, cfg):
     # check if team_id has run out game time, update txt

@@ -4,6 +4,7 @@ import gymnasium as gym
 import gymnasium_env
 import pickle
 import numpy as np
+import fcntl
 
 action_only_game_types = ['a', 'b', 'c', 'd']
 full_game_types = [str(i) for i in range(10)]
@@ -154,6 +155,20 @@ def update_grid_if_need(grid, game_result, game_dir):
     return new_grid
 
 
+def lock_minus_txt(fpath):
+    # write count - 1
+    file_desc = os.open(fpath, os.O_RDWR|os.O_CREAT)
+    with os.fdopen(file_desc, 'r+') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        content = f.read().strip()
+        count = int(content) if content else 0
+        f.seek(0)
+        f.write(str(max(count-1, 0)))
+        f.truncate()
+        fcntl.flock(f, fcntl.LOCK_UN)
+
+
 def env_step(game_id, main_cfg, action, cls, grid_pred):
     # update env, send new data to client
     #print(datetime.now(), 'begin env_step')
@@ -174,6 +189,8 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     if term:
         with open(f'{game_dir}/finish.txt', 'w') as f:
             f.write('finish')
+        # release a connection
+        lock_minus_txt(os.path.join(main_cfg['save_dir'], game_id.split('_')[0], 'connections.txt'))
     #print(datetime.now(), 'end env_step')
     save_step_time(game_dir)
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
