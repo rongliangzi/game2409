@@ -47,9 +47,8 @@ def process_team_post(data, team_id):
         if len(info) > 0:
             return info, code
         bag, grid, loc, score, is_end = env_step(game_id, main_cfg, action, cls, grid_cls)
-        # use interval median instead
-        # score += get_time_penalty(interval, main_cfg, game_id)
-        update_game_result(game_dir, score, interval)
+        # use interval median to calculate time penalty instead
+        score = update_game_result(game_dir, score, interval, is_end)
         result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid, 'loc': loc}
         if time.time() - st > 1:
             print('Env step too long time {game_id}')
