@@ -51,13 +51,13 @@ def handle_client():
     try:
         data = request.get_json()
         team_id = data.get('team_id', None)
-        if team_id is None:
-            return "team_id is none", 403
+        if team_id == 'public':
+            return "Test connection success", 204
         elif team_id in legal_team_id.keys():
             return process_team_post(data, team_id)
         else:
             print(f'team_id:{team_id} illegal')
-            return "team_id illegal", 402
+            return "team_id illegal", 400
     except Exception as e:
         print(f'Error: {str(e)}')
         return jsonify({'status': e, 'message': str(e)}), 500
