@@ -17,6 +17,7 @@ def process_team_post(data, team_id):
     # check team id legal
     os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
     if data.get('begin', None):
+        st = time.time()
         if not check_connections(team_id, main_cfg, data.get('refresh', False)):
             return f'Team {team_id} has reached max connections: {main_cfg["team_max_connections"]}', 400
         if not begin_if_can(team_id, main_cfg):
@@ -24,9 +25,12 @@ def process_team_post(data, team_id):
         if not check_begin(main_cfg, data['begin']):
             return f'Illegal game_type game_id param', 400
         img, bag, grid, loc, game_id = init_game(team_id, main_cfg, data['begin'])
+        if time.time() - st > 1:
+            print('Env step too long time {game_id}')
         return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid, 'loc': loc})
     else:
         # continue existing game, game_id, action, cls
+        st = time.time()
         game_id = data.get('game_id', None)  # str
         if game_id is None:
             return 'Game id must be provided', 400
@@ -46,6 +50,8 @@ def process_team_post(data, team_id):
         score += get_time_penalty(time_diff, main_cfg, game_id)
         update_game_result(game_dir, score)
         result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid, 'loc': loc}
+        if time.time() - st > 1:
+            print('Env step too long time {game_id}')
         return jsonify(result)
 
 
