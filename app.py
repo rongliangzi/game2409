@@ -52,7 +52,7 @@ def handle_client():
         data = request.get_json()
         team_id = data.get('team_id', None)
         if team_id == 'public':
-            return "Test connection success", 204
+            return "Test connection success", 400
         elif team_id in legal_team_id.keys():
             return process_team_post(data, team_id)
         else:
