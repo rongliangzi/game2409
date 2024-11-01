@@ -47,13 +47,13 @@ def check_connections(team_id, cfg, refresh=False):
                 cur_dir = os.path.join(cfg['save_dir'], team_id, gd)
                 if not os.path.exists(os.path.join(cur_dir, 'finish.txt')):
                     shutil.rmtree(cur_dir)
-            print(f'Finish refresh, time:{time.time()-st:.1f}s')
+            print(f'{team_id } finish refresh, time:{time.time()-st:.2f}s')
         except Exception as e:
             print(f'Exception {e} when remove {connect_fpath}')
         finally:
             pass
     connect_n = lock_rw_txt(connect_fpath, cfg['team_max_connections'])
-    print(team_id, 'connection_n', connect_n)
+    #print(team_id, 'connection_n', connect_n)
     return connect_n < cfg['team_max_connections']
 
 
