@@ -127,16 +127,17 @@ def random_init_search(size, cls_n, elim_n):
 
 if __name__ == "__main__":
     # random init game data
-    params = [(12, 21, 4), (12, 21, 3), (16, 21, 4), (20, 21, 5), (20, 21, 4)]
+    params = [(3,3,3), (12, 21, 4), (12, 21, 3), (16, 21, 4), (20, 21, 5), (20, 21, 4)]
     game_data_dir = '../init_game_data/debug/'
     for i, (size, cls_n, elim_n) in enumerate(params):
         print(size, cls_n, elim_n)
-        for j in range(10000):
+        for j in range(1000):
             grid, loc = init_grid_loc(size, cls_n, elim_n)
-            cur_dir = game_data_dir + f'{i+2}/{j:05}/'
+            cur_dir = game_data_dir + f'{i+1}/{j:05}/'
             os.makedirs(cur_dir, exist_ok=True)
             np.save(cur_dir + 'grid.npy', grid)
             np.save(cur_dir + 'loc.npy', np.array(loc, dtype=int))
+        break
     size = 5
     cls_n = 5
     elim_n = 5
