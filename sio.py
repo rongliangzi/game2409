@@ -1,30 +1,50 @@
-from flask import Flask
+from flask import Flask, request
 from flask_socketio import SocketIO, emit
 import eventlet
+import numpy as np
+
 
 # init Flask and SocketIO
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='eventlet')
+connect_games = {}
 
-initial_game_state = {"score": 0, "position": [0, 0], "health": 100}
+init_game_state = {"score": 0, "position": [0, 0], 'grid': [[1,1,], [2,2]], 'bag': {1: 0}}
 
 @socketio.on('connect')
 def handle_connect():
-    print("Client connected")
-    emit('game_data', initial_game_state)
+    print("Client connected", request.sid)
 
-@socketio.on('player_action')
-def handle_player_action(data):
+@socketio.on('init_game')
+def handle_init_game(data):
+    print('init game', data)
+    team_id = data['team_id']
+    if team_id not in connect_games:
+        connect_games[team_id] = []
+    connect_games[team_id].append(request.sid)
+    print(connect_games)
+    socketio.emit('game_init', init_game_state)
+
+@socketio.on('action')
+def handle_action(data):
     print("Received action from client:", data)
     new_game_state = {
-            "score": initial_game_state["score"] + 1,  
-            "position": [data.get("x"), data.get("y")],
-            "health": initial_game_state["health"] - data.get("damage", 0)
+            "score": init_game_state["score"] + 1,
+            "position": init_game_state['position'],
+            'grid': init_game_state['grid'],
+            'bag': init_game_state['bag']
             }
-    emit('game_data', new_game_state)
+    if np.random.random() < 0.3:
+        print(data['team_id'], 'game over')
+        socketio.emit('game_over', new_game_state)
+    else:
+        socketio.emit('game_update', new_game_state)
 
-def check_game_over(state):
-    return state["health"] <= 0
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('disconnect', request.sid)
+
 
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0", port=8081)
