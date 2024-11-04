@@ -30,7 +30,7 @@ def update_acc_if_need(game_result, grid_pred, init_grid, game_dir):
         np.save(f'{game_dir}/grid_pred.npy', grid_pred)
 
 
-def update_game_result(game_dir, score, itv, is_end):
+def update_game_result(game_dir, score, itv, is_end, main_cfg, game_id):
     # update cum_score, rounds on every step
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
         game_result = pickle.load(f)
@@ -142,7 +142,7 @@ def init_game(team_id, main_cfg, begin):
     if game_type in full_game_types:
         obs['grid'] *= 0
     if time.time() - st > 1:
-        print('Env init too long time {game_id}\n', time_str)
+        print(f'Env init too long time {game_id}\n', time_str)
     return obs['image'].tolist(), obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), game_id
 
 
@@ -207,5 +207,5 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     grid = update_grid_if_need(obs['grid'], game_result, game_dir)
     save_step_time(game_dir)
     if time.time() - st > 1:
-        print('Env step too long time {game_id}\n', time_str)
+        print(f'Env step too long time {game_id}\n', time_str)
     return obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), rew, term
