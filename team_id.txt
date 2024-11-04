@@ -1,9 +1,10 @@
-public: public
-maserati: xuzhouzi
-porsche: niujiahe
-ferrari: lizehan
-lambogini: xili
-xiaomi: rongliangzi
-emira: nanjiafan
-bentley: rongliangzi
-mclaren: rongliangzi
+,team_name,team_id
+0,public,public
+1,xuzhouzi,maserati
+2,niujiahe,porsche
+3,lizehan,ferrari
+4,xili,lambogini
+5,rongliangzi,xiaomi
+6,nanjiafan,emira
+7,rongliangzi,bentley
+8,rongliangzi,mclaren

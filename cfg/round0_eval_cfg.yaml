@@ -1,5 +1,5 @@
 save_dir: "./team_game_data/"
-team_id_path: "./team_id.txt"
+team_id_path: "./team_info_20241104.csv"
 # max times for each team per day
 max_n: 200
 max_step_seconds: 2

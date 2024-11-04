@@ -9,7 +9,7 @@ app = Flask(__name__)
 with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
-legal_team_id = read_team_id_txt(main_cfg['team_id_path'])
+legal_team_id = read_team_id(main_cfg['team_id_path'])
 #print('team_id:', legal_team_id)
 
 

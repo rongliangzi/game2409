@@ -6,14 +6,12 @@ import shutil
 import time
 
 
-def read_team_id_txt(team_id_path):
-    # line in txt has format: {team_id}: {team_name}
+def read_team_id(team_id_path):
+    # line in file has format: {team_id}: {team_name}
     legal_team_id = dict()
     with open(team_id_path) as f:
-        for l in f.readlines():
-            if ': ' not in l:
-                continue
-            team_id, team_name = l.strip().split(': ')
+        for l in f.readlines()[1:]:
+            row_id, team_name, team_id = l.strip().split(',')
             legal_team_id[team_id] = team_name
     return legal_team_id
 
