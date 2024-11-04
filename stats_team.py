@@ -28,11 +28,15 @@ if __name__=="__main__":
                 continue
             with open(game_result_path, 'rb') as f:
                 game_result = pickle.load(f)
+            if 'begin' not in game_result.keys():
+                continue
             game_result['game_type'] = game_result['begin'][0]
             game_result['game_data_id'] = game_result['begin'][1:]
             del game_result['begin']
             for k in team_stats.keys():
                 team_stats[k].append(game_result[k])
             index.append((team_id, game_key))
+        if len(index) == 0:
+            continue
         df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(index))
-        df.to_csv(os.path.join(cur_path, f'team_stats.csv'))
+        df.to_csv(os.path.join(team_dir, f'team_stats.csv'))
