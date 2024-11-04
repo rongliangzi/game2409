@@ -26,7 +26,7 @@ def process_team_post(data, team_id):
             return f'Illegal game_type game_id param', 400
         img, bag, grid, loc, game_id = init_game(team_id, main_cfg, data['begin'])
         if time.time() - st > 1:
-            print('Env step too long time {game_id}')
+            print(f'Env step too long time {game_id}')
         return jsonify({'is_end': False, 'img': img, 'bag':bag, 'score': 0, 'game_id': game_id, 'grid': grid, 'loc': loc})
     else:
         # continue existing game, game_id, action, cls
@@ -48,10 +48,12 @@ def process_team_post(data, team_id):
             return info, code
         bag, grid, loc, score, is_end = env_step(game_id, main_cfg, action, cls, grid_cls)
         # use interval median to calculate time penalty instead
-        score = update_game_result(game_dir, score, interval, is_end)
-        result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 'grid': grid, 'loc': loc}
+        score = update_game_result(game_dir, score, interval, is_end, main_cfg, game_id)
+        result = {'is_end': is_end, 'bag': bag, 'score': score, 'game_id': game_id, 
+                  'grid': grid, 
+                  'loc': loc}
         if time.time() - st > 1:
-            print('Env step too long time {game_id}')
+            print(f'Env step too long time {game_id}')
         return jsonify(result)
 
 
