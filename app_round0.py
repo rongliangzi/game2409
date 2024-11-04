@@ -65,6 +65,9 @@ def handle_client():
         if team_id == 'public':
             return "Test connection success", 400
         elif team_id in legal_team_id.keys():
+            now = datetime.now()
+            if now < datetime(2024, 11, 11, 2, 00, 00):
+                return "Round0 not open now", 400
             return process_team_post(data, team_id)
         else:
             print(f'team_id:{team_id} illegal')

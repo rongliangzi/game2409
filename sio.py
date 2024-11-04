@@ -1,12 +1,12 @@
 from flask import Flask, request
-from flask_socketio import SocketIO, emit
-import eventlet
+from flask_socketio import SocketIO, emit, disconnect
+#import eventlet
 import numpy as np
 
 
 # init Flask and SocketIO
 app = Flask(__name__)
-socketio = SocketIO(app, async_mode='eventlet')
+socketio = SocketIO(app)
 connect_games = {}
 
 init_game_state = {"score": 0, "position": [0, 0], 'grid': [[1,1,], [2,2]], 'bag': {1: 0}}
@@ -34,16 +34,20 @@ def handle_action(data):
             'grid': init_game_state['grid'],
             'bag': init_game_state['bag']
             }
-    if np.random.random() < 0.3:
+    if np.random.random() < 0.2:
         print(data['team_id'], 'game over')
         socketio.emit('game_over', new_game_state)
+        disconnect()
     else:
         socketio.emit('game_update', new_game_state)
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('disconnect', request.sid)
+    try:
+        print('disconnect', request.sid)
+    except Exception as e:
+        print('Exception', e)
 
 
 if __name__ == '__main__':
