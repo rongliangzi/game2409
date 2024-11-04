@@ -45,6 +45,8 @@ def check_connections(team_id, cfg, refresh=False):
             game_dir = os.listdir(os.path.join(cfg['save_dir'], team_id))
             for gd in game_dir:
                 cur_dir = os.path.join(cfg['save_dir'], team_id, gd)
+                if not os.path.isdir(cur_dir):
+                    continue
                 if not os.path.exists(os.path.join(cur_dir, 'finish.txt')):
                     shutil.rmtree(cur_dir)
             print(f'{team_id } finish refresh, time:{time.time()-st:.2f}s')
