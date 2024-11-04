@@ -39,7 +39,8 @@ def check_connections(team_id, cfg, refresh=False):
         #  remove all unfinished games before and clear connections
         try:
             st = time.time()
-            os.remove(connect_fpath)
+            if os.path.exists(connect_fpath):
+                os.remove(connect_fpath)
             game_dir = os.listdir(os.path.join(cfg['save_dir'], team_id))
             for gd in game_dir:
                 cur_dir = os.path.join(cfg['save_dir'], team_id, gd)
