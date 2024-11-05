@@ -90,8 +90,13 @@ def handle_continue(data):
     bag, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     if is_end:
         game_dir = os.path.join(main_cfg['save_dir'], game_id.replace('_', '/'))
+        game_info = sid_game[sid]
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
-            pickle.dump({'cum_score': 0, 'acc': 0, 'begin': 0, 'rounds': 0, 'time_itv': 0}, f)
+            pickle.dump({'cum_score': game_info['env'].unwrapped.get_cum_score(), 
+                         'acc': game_info['acc'], 
+                         'begin': game_info['game_data_id'], 
+                         'rounds': game_info['rounds'], 
+                         'time_itv': 0}, f)
     emit('response', {'team_id': team_id, 'game_id': data['game_id'], 'rounds': sid_game[sid]['rounds'],
                       'is_end': is_end, 'score': score, 'bag': bag, 'loc': loc})
 
