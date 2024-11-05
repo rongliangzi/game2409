@@ -3,6 +3,7 @@ import yaml
 import numpy as np
 import pandas as pd
 import pickle
+from datetime import datetime
 
 
 if __name__=="__main__":
@@ -15,9 +16,21 @@ if __name__=="__main__":
         index = []
         # iterate on all teams
         team_dir = os.path.join(save_dir, team_id)
+        if not os.path.isdir(team_dir):
+            continue
+        now = datetime.now()
+        if now < datetime(2024, 11, 11, 2, 00, 00):
+            if os.path.exists(f'{team_dir}/team_stats.csv'):
+                os.remove(f'{team_dir}/team_stats.csv')
+            if os.path.exists(team_dir + '/public/game_result.pkl'):
+                with open(f'{team_dir}/team_stats.csv', 'w') as f:
+                    f.write(f',,cum_score,game_type,game_data_id,rounds,acc\n,,0,2,00000,0,0')
+            continue
         all_game_key = os.listdir(team_dir)
         for game_key in all_game_key:
             # all games of one team
+            if game_key == 'public':
+                continue
             cur_path = os.path.join(team_dir, game_key)
             if not os.path.isdir(cur_path):
                 continue
