@@ -10,7 +10,7 @@ with open('./cfg/round0_eval_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 legal_team_id = read_team_id(main_cfg['team_id_path'])
-#print('team_id:', legal_team_id)
+print('team_id:', len(legal_team_id))
 
 
 def process_team_post(data, team_id):
@@ -67,7 +67,12 @@ def handle_client():
         elif team_id in legal_team_id.keys():
             now = datetime.now()
             if now < datetime(2024, 11, 11, 2, 00, 00):
-                return "Round0 not open now", 400
+                # generate result 000, game_type=2
+                team_pub_dir = os.path.join(main_cfg['save_dir'], team_id, 'public/')
+                os.makedirs(team_pub_dir, exist_ok=True)
+                with open(f'{team_pub_dir}/game_result.pkl', 'wb') as f:
+                    pickle.dump({'cum_score':0, 'acc': 0, 'begin':'200000', 'rounds':0}, f)
+                return "Connect to server, Round0 not open now", 400
             return process_team_post(data, team_id)
         else:
             print(f'team_id:{team_id} illegal')
