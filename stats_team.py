@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from datetime import datetime
+import shutil
 
 
 if __name__=="__main__":
@@ -20,6 +21,7 @@ if __name__=="__main__":
             continue
         now = datetime.now()
         if now < datetime(2024, 11, 11, 2, 00, 00):
+            # before round0, only use public dir data to generate team_stats
             if os.path.exists(f'{team_dir}/team_stats.csv'):
                 os.remove(f'{team_dir}/team_stats.csv')
             if os.path.exists(team_dir + '/public/game_result.pkl'):
@@ -51,7 +53,8 @@ if __name__=="__main__":
                     team_stats[k].append(game_result[k])
                 index.append((team_id, game_key))
             except Exception as e:
-                print(f'Exception {e} when loading {game_result}')
+                print(f'Exception {e} when loading {game_result_path}')
+                #shutil.rmtree(os.path.join(team_dir, game_key))
         if len(index) == 0:
             continue
         df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(index))
