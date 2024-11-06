@@ -71,13 +71,22 @@ def env_step2(game_env, game_id, main_cfg, action):
     return obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), rew, term
 
 
+@socketio.on('acc')
+def handle_acc(data):
+    cls = int(data.get('cls', 0))
+    sid = request.sid
+    if cls == label:
+        sid_game[sid]['correct'] += 1
+    emit('response', {})
+
+
 @socketio.on('continue')
 def handle_continue(data):
+    sid = request.sid
     now = datetime.now()
     t_diff = now - sid_game[sid]['last_send_time']
     diff_seconds = t_diff.total_seconds()  # float
     sid_game[sid]['interval'].append(diff_seconds)
-    sid = request.sid
     if sid in begin_sid:
         begin_sid.remove(sid)
     team_id = data['team_id']
@@ -92,11 +101,11 @@ def handle_continue(data):
         sid_game[sid]['acc'] = (grid_pred == cls_label).sum() / cls_label.size
     bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     if is_end:
-        time_penalty = get_time_penalty(np.median(game_result['interval']), main_cfg, game_id)
-        score += time_penalty
-        cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         game_dir = os.path.join(main_cfg['save_dir'], game_id.replace('_', '/'))
         game_info = sid_game[sid]
+        time_penalty = get_time_penalty(np.median(game_info['interval']), main_cfg, game_id)
+        score += time_penalty
+        cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', 0), 
@@ -131,16 +140,21 @@ def handle_begin(data):
                 #print('waiting for begin emit')
             begin_sid.append(request.sid)
             os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
-            img, bag, grid, loc, game_id, env = init_game2(team_id, main_cfg, data['begin'])
+            game_type = data['begin'][0]
+            if game_type in ['A', 'B', 'C']:
+                #img = fetch_img()
+                send_data = {}
+            else:
+                img, bag, grid, loc, game_id, env = init_game2(team_id, main_cfg, data['begin'])
+                send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
+                if data['begin'][0] in ['2', '3', '4']:
+                    send_data['img'] = img
+                else:
+                    send_data['grid'] = grid
             game_info = {'team_id': team_id, 'game_id': game_id, 'env': env, 'game_data_id': data['begin'],
                          'rounds': 0, 'last_send_time': datetime.now(), 'interval': []}
             sid_game[request.sid] = game_info
             team_connect[team_id] = team_connect.get(team_id, 0) + 1
-            send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
-            if data['begin'][0] in ['2', '3', '4']:
-                send_data['img'] = img
-            else:
-                send_data['grid'] = grid
             emit('response', send_data)
         except Exception as e:
             print(f'{request.sid} exception: {e}')
