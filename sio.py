@@ -1,6 +1,6 @@
 from flask import Flask, request
 import eventlet
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, disconnect
 import random
 import numpy as np
 import yaml
@@ -48,8 +48,7 @@ def init_game2(team_id, main_cfg, begin):
     game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
     time_str += f'{datetime.now()}, finish reset'
-    if game_type in full_game_types:
-        grid = np.zeros_like(obs['grid'])
+    grid = np.zeros_like(obs['grid']) if game_type in full_game_types else obs['grid']
     if time.time() - st > 1:
         print(f'Env init too long time {game_id}\n', time_str)
     return obs['image'].tolist(), obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), game_id, game_env
@@ -69,7 +68,7 @@ def env_step2(game_env, game_id, main_cfg, action):
     time_str += f'{datetime.now()} end env_step\n'
     if time.time() - st > 1:
         print(f'Env step too long time {game_id}\n', time_str)
-    return obs['bag'].tolist(), obs['loc'].tolist(), rew, term
+    return obs['bag'].tolist(), obs['grid'].tolist(), obs['loc'].tolist(), rew, term
 
 
 @socketio.on('continue')
@@ -87,18 +86,19 @@ def handle_continue(data):
         grid_pred = data['grid_pred']
         cls_label = sid_game[sid]['env'].unwrapped.get_init_grid()
         sid_game[sid]['acc'] = (grid_pred == cls_label).sum() / cls_label.size
-    bag, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
+    bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     if is_end:
         game_dir = os.path.join(main_cfg['save_dir'], game_id.replace('_', '/'))
         game_info = sid_game[sid]
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': game_info['env'].unwrapped.get_cum_score(), 
-                         'acc': game_info['acc'], 
+                         'acc': game_info.get('acc', 0), 
                          'begin': game_info['game_data_id'], 
                          'rounds': game_info['rounds'], 
                          'time_itv': 0}, f)
-    emit('response', {'team_id': team_id, 'game_id': data['game_id'], 'rounds': sid_game[sid]['rounds'],
-                      'is_end': is_end, 'score': score, 'bag': bag, 'loc': loc})
+    send_data = {'team_id': team_id, 'game_id': data['game_id'], 'rounds': sid_game[sid]['rounds'], 
+                 'is_end': is_end, 'score': score, 'bag': bag, 'loc': loc}
+    emit('response', send_data)
 
 
 @socketio.on('begin')
@@ -127,9 +127,14 @@ def handle_begin(data):
                          'rounds': 0, 'lasttime': 0, 'interval': []}
             sid_game[request.sid] = game_info
             team_connect[team_id] = team_connect.get(team_id, 0) + 1
-            emit('response', {'img': img, 'grid': grid, 'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': game_info['rounds']})
+            send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
+            if data['begin'][0] in ['2', '3', '4']:
+                send_data['img'] = img
+            else:
+                send_data['grid'] = grid
+            emit('response', send_data)
         except Exception as e:
-            print(f'{sid} exception: {e}')
+            print(f'{request.sid} exception: {e}')
             disconnect()
 
 @socketio.event
