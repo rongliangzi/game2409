@@ -20,7 +20,7 @@ max_begin_num = 40
 
 
 app = Flask(__name__)
-socketio = SocketIO(app, async_mode='eventlet', ping_timeout=60)
+socketio = SocketIO(app, async_mode='eventlet', ping_timeout=30)
 logging.basicConfig(level=logging.INFO)
 
 with open('./cfg/debug_cfg.yaml') as f:
@@ -73,6 +73,10 @@ def env_step2(game_env, game_id, main_cfg, action):
 
 @socketio.on('continue')
 def handle_continue(data):
+    now = datetime.now()
+    t_diff = now - sid_game[sid]['last_send_time']
+    diff_seconds = t_diff.total_seconds()  # float
+    sid_game[sid]['interval'].append(diff_seconds)
     sid = request.sid
     if sid in begin_sid:
         begin_sid.remove(sid)
@@ -88,16 +92,20 @@ def handle_continue(data):
         sid_game[sid]['acc'] = (grid_pred == cls_label).sum() / cls_label.size
     bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     if is_end:
+        time_penalty = get_time_penalty(np.median(game_result['interval']), main_cfg, game_id)
+        score += time_penalty
+        cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         game_dir = os.path.join(main_cfg['save_dir'], game_id.replace('_', '/'))
         game_info = sid_game[sid]
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
-            pickle.dump({'cum_score': game_info['env'].unwrapped.get_cum_score(), 
+            pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', 0), 
                          'begin': game_info['game_data_id'], 
                          'rounds': game_info['rounds'], 
                          'time_itv': 0}, f)
     send_data = {'team_id': team_id, 'game_id': data['game_id'], 'rounds': sid_game[sid]['rounds'], 
                  'is_end': is_end, 'score': score, 'bag': bag, 'loc': loc}
+    sid_game[sid]['last_send_time'] = datetime.now()
     emit('response', send_data)
 
 
@@ -105,7 +113,8 @@ def handle_continue(data):
 def handle_begin(data):
     print(f'Begin : {data}')
     team_id = data['team_id']
-    if team_id not in legal_team_id:
+    debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
+    if team_id not in legal_team_id and (not any([team_id.startswith(v) for v in debug_id])):
         emit('response', {'error': 'Illegal team_id'})
     elif team_connect.get(team_id, 0) >= max_team_connect:
         emit('response', {'error': 'cannot begin because reaching max connections'})
@@ -124,7 +133,7 @@ def handle_begin(data):
             os.makedirs(os.path.join(main_cfg["save_dir"], team_id), exist_ok=True)
             img, bag, grid, loc, game_id, env = init_game2(team_id, main_cfg, data['begin'])
             game_info = {'team_id': team_id, 'game_id': game_id, 'env': env, 'game_data_id': data['begin'],
-                         'rounds': 0, 'lasttime': 0, 'interval': []}
+                         'rounds': 0, 'last_send_time': datetime.now(), 'interval': []}
             sid_game[request.sid] = game_info
             team_connect[team_id] = team_connect.get(team_id, 0) + 1
             send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
