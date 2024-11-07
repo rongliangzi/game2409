@@ -31,6 +31,10 @@ Code for leaderboard
 
 Randomly generate many initial grid and loc
 
+## adjust\_grid\_set\_cls.py
+Given a set of grids for initing games, adjust the class to get the total class distribution we want.
+while not get aimed distribtion:
+    if class i > aimed freq, class j < aimed freq, find a grid where count\_i > count\_j, swap i and j.
 
 # Deprecated
 
