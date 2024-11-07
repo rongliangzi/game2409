@@ -26,8 +26,7 @@ with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 legal_team_id = read_team_id(main_cfg['team_id_path'])
-for team_id in legal_team_id:
-    os.makedirs(os.path.join(main_cfg['save_cfg'], team_id), exist_ok=True)
+print('Team num:', len(legal_team_id))
 
 
 @app.route('/')
