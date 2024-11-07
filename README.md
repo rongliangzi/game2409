@@ -1,26 +1,28 @@
 # In use
 
 ## sio.py
-Main entrance of server
+Main entrance of server.
 Run 
 ```
-python sio.py --port 8081/8081/8083/8084 --ip 52.82.16.74/69.230.243.237
+python sio.py --port 8081~8087 --ip 52.82.16.74/69.230.243.237
 ```
 
 ## stats\_team.py
-Run `python stats_team.py`, and you can get `main\_cfg['save\_dir']/{team_id}/team\stats.csv`, including game\_id, cum\_score, rounds, etc.
+Run `python stats_team.py`, and you can get `main_cfg['save_dir']/{team_id}/team_stats.csv`, columns including `game_id`, `cum_score`, `rounds`, `acc`, etc.
 
 DO NOT forget to use data on any server.
 
 
 ## cfg
-- `cfg/chusai_eval_cfg.yaml`, Configuration for chusai eval phase.
+- `cfg/debug_cfg.yaml`, for debug
 
-- `cfg/chusai_test_cfg.yaml`, Configuration for chusai test phase.
+- `cfg/round0_eval_cfg.yaml`, Configuration for round0 eval phase.
 
-- `cfg/fusai_eval_cfg.yaml`, Configuration for fusai eval phase.
+- `cfg/round0_test_cfg.yaml`, Configuration for round0 test phase.
 
-- `cfg/fusai_test_cfg.yaml`, Configuration for fusai test phase.
+- `cfg/round1_eval_cfg.yaml`, Configuration for round1 eval phase.
+
+- `cfg/round1_test_cfg.yaml`, Configuration for round1 test phase.
 
 
 ## leaderboard
