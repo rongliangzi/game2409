@@ -36,6 +36,10 @@ Given a set of grids for initing games, adjust the class to get the total class 
 while not get aimed distribtion:
     if class i > aimed freq, class j < aimed freq, find a grid where count\_i > count\_j, swap i and j.
 
+## assign\_img\_to\_grid.py
+
+Assign img for each grid. Make sure that the whole grid dataset can use the whole image dataset.
+
 # Deprecated
 
 ## app\_debug.py, app\_round0.py

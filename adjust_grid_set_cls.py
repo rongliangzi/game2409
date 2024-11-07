@@ -48,7 +48,7 @@ if __name__ == '__main__':
     class_num = dict()
     target_cls_distribution = dict()
     for i in range(20):
-        target_cls_distribution[i] = 200
+        target_cls_distribution[i] = 100
     target_cls_distribution[20] = 560
     print('target_cls_distribution', target_cls_distribution)
     target_sum = sum(target_cls_distribution.values())
