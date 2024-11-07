@@ -4,7 +4,7 @@
 Main entrance of server
 Run 
 ```
-python sio.py --port 8081/8081/8083/8084
+python sio.py --port 8081/8081/8083/8084 --ip 52.82.16.74/69.230.243.237
 ```
 
 ## stats\_team.py
