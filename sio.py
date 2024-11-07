@@ -6,7 +6,7 @@ import numpy as np
 import yaml
 from rule_utils import *
 from game_utils import *
-
+import argparse
 
 # request.sid: game_env
 sid_game = dict()
@@ -20,13 +20,19 @@ max_begin_num = 40
 
 
 app = Flask(__name__)
-socketio = SocketIO(app, async_mode='eventlet', ping_timeout=60)
+socketio = SocketIO(app, async_mode='eventlet', ping_timeout=10)
 
 with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 legal_team_id = read_team_id(main_cfg['team_id_path'])
+for team_id in legal_team_id:
+    os.makedirs(os.path.join(main_cfg['save_cfg'], team_id), exist_ok=True)
 
+
+@app.route('/')
+def index():
+    return "Flask-SocketIO Server running"
 
 def init_acc(team_id, main_cfg):
     # begin acc game
@@ -207,11 +213,14 @@ def handle_disconnect():
             team_connect[team_id] -= 1
             print(f'team: {team_id}, game id {game_id} disconnect, current team connect: {team_connect[team_id]}')
         else:
-            print(f'team: , game id disconnect')
+            print(f'{request.sid} no team disconnect')
         del sid_game[request.sid]
     else:
         print(f'Unknown or already disconnect client: {request.sid}')
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=8081)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int)
+    args = parser.parse_args()
+    socketio.run(app, host='0.0.0.0', port=args.port)
