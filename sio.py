@@ -112,6 +112,7 @@ def handle_begin(data):
     team_id = data['team_id']
     debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
     global cur_ip, cur_port
+    print('cur_ip', cur_ip, 'cur_port', cur_port)
     if team_id not in team_id_info and (not any([team_id.startswith(v) for v in debug_id])):
         emit('response', {'error': 'Illegal team_id'})
     elif (team_id in team_id_info) and (team_id_info['team_id'].get('ip', '') != '') and (team_id_info['team_id']['ip'] != cur_ip):
@@ -181,12 +182,16 @@ def handle_disconnect():
         print(f'Unknown or already disconnect client: {request.sid}')
 
 
+def set_ip_port(args):
+    global cur_ip, cur_port
+    cur_ip = args.ip
+    cur_port = args.port
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', type=int)
-    parser.add_argument('--port', type=int)
+    parser.add_argument('--ip', type=str)
+    parser.add_argument('--port', type=str)
     args = parser.parse_args()
-    global cur_ip, cur_port
-    cur_ip = str(args.ip)
-    cur_port = str(args.port)
-    socketio.run(app, host='0.0.0.0', port=args.port)
+    set_ip_port(args)
+    socketio.run(app, host='0.0.0.0', port=int(args.port))
