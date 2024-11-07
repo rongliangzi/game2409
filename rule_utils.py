@@ -7,13 +7,17 @@ import time
 
 
 def read_team_id(team_id_path):
-    # line in file has format: {team_id}: {team_name}
-    legal_team_id = dict()
+    # line in file has format: row, team_name, team_id(, ip, port)
+    team_id_info = dict()
     with open(team_id_path) as f:
         for l in f.readlines()[1:]:
-            row_id, team_name, team_id = l.strip().split(',')
-            legal_team_id[team_id] = team_name
-    return legal_team_id
+            splits = l.strip().split(',')
+            team_name, team_id = splits[1], splits[2]
+            team_id_info[team_id] = {'team_name': team_name}
+            if len(splits) == 5:
+                team_id_info[team_id]['ip'] = splits[3]
+                team_id_info[team_id]['port'] = splits[4]
+    return team_id_info
 
 
 def lock_rw_txt(fpath, max_n):

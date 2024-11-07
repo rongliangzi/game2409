@@ -18,13 +18,15 @@ begin_sid = []
 
 
 app = Flask(__name__)
+cur_ip = ''
+cur_port = ''
 socketio = SocketIO(app, async_mode='eventlet', ping_timeout=10)
 
 with open('./cfg/debug_cfg.yaml') as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
-legal_team_id = read_team_id(main_cfg['team_id_path'])
-print('Team num:', len(legal_team_id))
+team_id_info = read_team_id(main_cfg['team_id_path'])
+print('Team num:', len(team_id_info))
 
 
 @app.route('/')
@@ -109,8 +111,15 @@ def handle_begin(data):
     print(f'Begin : {data}')
     team_id = data['team_id']
     debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
-    if team_id not in legal_team_id and (not any([team_id.startswith(v) for v in debug_id])):
+    global cur_ip, cur_port
+    if team_id not in team_id_info and (not any([team_id.startswith(v) for v in debug_id])):
         emit('response', {'error': 'Illegal team_id'})
+    elif (team_id in team_id_info) and (team_id_info['team_id'].get('ip', '') != '') and (team_id_info['team_id']['ip'] != cur_ip):
+        # check ip only if ip info exists
+        emit('response', {'error': f'Error: IP not correct, can only be {team_id_info["team_id"]["ip"]}'})
+    elif (team_id in team_id_info) and (team_id_info['team_id'].get('port', '') != '') and (team_id_info['team_id']['port'] != cur_port):
+        # check port only if port info exists
+        emit('response', {'error': f'Error: port not correct, can only be {team_id_info["team_id"]["port"]}'})
     elif sum(team_connect.values()) >= max_total_connect:
         emit('response', {'error': 'cannot begin because server overloading, wait'})
     elif team_connect.get(team_id, 0) >= main_cfg['team_max_connections']:
@@ -174,6 +183,10 @@ def handle_disconnect():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--ip', type=int)
     parser.add_argument('--port', type=int)
     args = parser.parse_args()
+    global cur_ip, cur_port
+    cur_ip = str(args.ip)
+    cur_port = str(args.port)
     socketio.run(app, host='0.0.0.0', port=args.port)
