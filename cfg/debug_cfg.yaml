@@ -10,6 +10,8 @@ img_path_label_pkl: '../data_v1030/round0_eval/img_path_label.pkl'
 cls_names: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']
 init_game_data_dir: '../init_game_data/debug/'
 team_max_connections: 50
+# max game num in step=0
+max_begin_num: 40
 param2:
   size: 12
   cls_n: 21
