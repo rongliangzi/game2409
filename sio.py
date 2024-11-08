@@ -87,7 +87,10 @@ def handle_continue(data):
         if 'grid_pred' in data:
             grid_pred = np.array(data['grid_pred'], dtype=int).flatten()
             if grid_pred.size == grid_label.size:
-                sid_game[sid]['acc'] = (grid_pred == grid_label).sum() / grid_label.size
+                correct = (grid_pred == grid_label).astype(int)
+                sid_game[sid]['acc'] = (correct).sum() / grid_label.size
+                mask = game_info['env'].unwrapped.get_mask()  # 1d
+                sid_game[sid]['correct_n'] = (mask * correct).sum()
     bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     send_data = {'team_id': team_id, 'game_id': game_id, 'rounds': sid_game[sid]['rounds'], 
                  'is_end': is_end, 'bag': bag, 'loc': loc}
@@ -100,10 +103,11 @@ def handle_continue(data):
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
-        print(f'itv: {median_itv}, acc: {send_data["acc"]}')
+        print(f'itv: {median_itv}, acc: {send_data["acc"]}, correct_n: {game_info.get("correct_n", 0)}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
+                         'correct_n': game_info.get('correct_n', 0),
                          'begin': game_info['game_data_id'], 
                          'rounds': game_info['rounds'], 
                          'time_itv': median_itv}, f)

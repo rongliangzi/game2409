@@ -101,6 +101,8 @@ def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
     for row in range(img_path.shape[0]):
         for col in range(img_path.shape[1]):
             cfg['img_path'].append(str(img_path[row][col]))
+    img_mask = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'img_mask.npy'))
+    cfg['img_mask'] = img_mask
 
 
 def get_game_id_dir(main_cfg, team_id, time_key):
