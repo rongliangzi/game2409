@@ -12,7 +12,7 @@ import argparse
 sid_game = dict()
 # team_id: connect_num, restrict connect each team
 team_connect = dict()
-max_total_connect = 60
+max_total_connect = 30
 # begin step
 begin_sid = []
 
@@ -39,23 +39,21 @@ def init_game2(team_id, main_cfg, begin):
     game_type = begin[0]
     param_type = type_dir = game_type_dic.get(game_type, game_type)
     game_data_id = begin[1:]
-    #print(f'Begin game type {game_type}, team {team_id}')
     env_args = main_cfg[f'param{param_type}']
     now = datetime.now()
     time_key = now.strftime("%Y%m%d-%H%M%S")
     game_id, game_dir = get_game_id_dir(main_cfg, team_id, time_key)
-    for k in ['img_dir', 'cls_names']:
-        env_args[k] = main_cfg[k]
     get_init_grid_loc(env_args, main_cfg, type_dir, game_data_id)
     game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
-    grid = np.zeros_like(obs['grid']) if game_type in full_game_types else obs['grid']
+    # return all -2 grid for full game when step=0
+    grid = np.zeros_like(obs['grid'])-2 if game_type in full_game_types else obs['grid']
     return obs['image'].tolist(), obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), game_id, game_env
 
 
 def env_step2(game_env, game_id, main_cfg, action):
     # update env, send new data to client
-    game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
+    game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
     obs, rew, term, _, info = game_env.step(action)
     if term:
         with open(f'{game_dir}/finish.txt', 'w') as f:
@@ -66,6 +64,7 @@ def env_step2(game_env, game_id, main_cfg, action):
 @socketio.on('continue')
 def handle_continue(data):
     sid = request.sid
+    # interval from last send time to this receive time
     now = datetime.now()
     t_diff = now - sid_game[sid]['last_send_time']
     diff_seconds = t_diff.total_seconds()  # float
@@ -78,7 +77,7 @@ def handle_continue(data):
     sid_game[sid]['rounds'] += 1
     if sid_game[sid]['rounds'] == 1 and sid_game[sid]['game_data_id'][0] in ['2', '3', '4']:
         # full game receive prediction, calculate accuracy
-        grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flaten()
+        grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flatten()
         if 'grid_pred' in data:
             grid_pred = np.array(data['grid_pred'], dtype=int).flatten()
             if grid_pred.size == grid_label.size:
@@ -87,14 +86,15 @@ def handle_continue(data):
     send_data = {'team_id': team_id, 'game_id': game_id, 'rounds': sid_game[sid]['rounds'], 
                  'is_end': is_end, 'bag': bag, 'loc': loc}
     if is_end:
-        game_dir = os.path.join(main_cfg['save_dir'], game_id.replace('_', '/'))
+        # last round, send accuracy, calculate time penalty
+        game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
         game_info = sid_game[sid]
         median_itv = np.median(game_info['interval'])
         time_penalty = get_time_penalty(median_itv, main_cfg, game_id)
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
-        # send accuracy at the last round
         send_data['acc'] = game_info.get('acc', -1.)
+        print(f'itv: {median_itv}, acc: {send_data["acc"]}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
@@ -115,10 +115,10 @@ def handle_begin(data):
     print('cur_ip', cur_ip, 'cur_port', cur_port)
     if team_id not in team_id_info and (not any([team_id.startswith(v) for v in debug_id])):
         emit('response', {'error': 'Illegal team_id'})
-    elif (team_id in team_id_info) and (team_id_info['team_id'].get('ip', '') != '') and (team_id_info['team_id']['ip'] != cur_ip):
+    elif (team_id in team_id_info) and ('ip' in team_id_info['team_id']) and (team_id_info['team_id']['ip'] != cur_ip):
         # check ip only if ip info exists
         emit('response', {'error': f'Error: IP not correct, can only be {team_id_info["team_id"]["ip"]}'})
-    elif (team_id in team_id_info) and (team_id_info['team_id'].get('port', '') != '') and (team_id_info['team_id']['port'] != cur_port):
+    elif (team_id in team_id_info) and ('port' in team_id_info['team_id']) and (team_id_info['team_id']['port'] != cur_port):
         # check port only if port info exists
         emit('response', {'error': f'Error: port not correct, can only be {team_id_info["team_id"]["port"]}'})
     elif sum(team_connect.values()) >= max_total_connect:
