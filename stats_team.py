@@ -8,6 +8,7 @@ import shutil
 
 
 if __name__=="__main__":
+    # run this file to get game stats for each team
     with open('./cfg/debug_cfg.yaml') as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
     save_dir = cfg['save_dir']
@@ -20,7 +21,7 @@ if __name__=="__main__":
         if not os.path.isdir(team_dir):
             continue
         now = datetime.now()
-        if now < datetime(2024, 11, 11, 2, 00, 00):
+        if now < datetime(2024, 11, 11, 2, 00, 00) and not any(team_id.startswith(sp) for sp in ['lzrong', 'zzxu', 'zhli']):
             # before round0, only use public dir data to generate team_stats
             if os.path.exists(f'{team_dir}/team_stats.csv'):
                 os.remove(f'{team_dir}/team_stats.csv')
@@ -29,6 +30,7 @@ if __name__=="__main__":
                     f.write(f',,cum_score,game_type,game_data_id,rounds,acc\n,,0,2,00000,0,0')
             continue
         all_game_key = os.listdir(team_dir)
+        print(f'Stats {team_id}')
         for game_key in all_game_key:
             # all games of one team
             if game_key == 'public':
