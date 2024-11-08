@@ -8,7 +8,11 @@ python sio.py --port 8081~8087 --ip 52.82.16.74/69.230.243.237
 ```
 
 ## stats\_team.py
-Run `python stats_team.py`, and you can get `main_cfg['save_dir']/{team_id}/team_stats.csv`, columns including `game_id`, `cum_score`, `rounds`, `acc`, etc.
+Run 
+```
+python stats_team.py
+``` 
+and you can get `main_cfg['save_dir']/{team_id}/team_stats.csv`, columns including `game_data_id`, `cum_score`, `rounds`, `acc`, `time_itv`.
 
 DO NOT forget to use data on any server.
 
@@ -35,12 +39,18 @@ Randomly generate many initial grid and loc
 
 ## adjust\_grid\_set\_cls.py
 Given a set of grids for initing games, adjust the class to get the total class distribution we want.
+
+```
 while not get aimed distribtion:
-    if class i > aimed freq, class j < aimed freq, find a grid where count\_i > count\_j, swap i and j.
+    if class i > aimed freq, class j < aimed freq, find a grid where count_i > count_j, swap i and j.
+```
 
 ## assign\_img\_to\_grid.py
 
 Assign img for each grid. Make sure that the whole grid dataset can use the whole image dataset.
+
+## find\_game\_data.py
+Using finished games to get game\_data\_id. We want to find the game data with high score std and low mean. Low mean means difficulty. High std means distinguishing.
 
 # Deprecated
 
