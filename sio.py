@@ -22,7 +22,13 @@ cur_ip = ''
 cur_port = ''
 socketio = SocketIO(app, async_mode='eventlet', ping_timeout=10)
 
-with open('./cfg/debug_cfg.yaml') as f:
+parser = argparse.ArgumentParser()
+parser.add_argument('--ip', type=str)
+parser.add_argument('--port', type=str)
+parser.add_argument('--cfg', type=str)
+args = parser.parse_args()
+print(args.cfg, args.ip, args.port)
+with open(args.cfg) as f:
     main_cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 team_id_info = read_team_id(main_cfg['team_id_path'])
@@ -189,9 +195,5 @@ def set_ip_port(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', type=str)
-    parser.add_argument('--port', type=str)
-    args = parser.parse_args()
     set_ip_port(args)
     socketio.run(app, host='0.0.0.0', port=int(args.port))
