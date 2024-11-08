@@ -2,12 +2,9 @@ import os
 import numpy as np
 import sys
 
-
-if __name__ == "__main__":
-    root_dir = '/root/Desktop/hunter/init_game_data/debug/4/'
-    img_dir = '/root/Desktop/hunter/data_v1030/round0_eval/'
+def get_cls_img_path(img_dir):
     img_cls = os.listdir(img_dir)
-    cls_img_path = dict()
+    cls_img_path = dict()  # {int(cls_name): [full_img_path]}
     for cls_name in img_cls:
         if not os.path.isdir(os.path.join(img_dir, cls_name)):
             continue
@@ -17,16 +14,29 @@ if __name__ == "__main__":
             cls_img_path[int(cls_name)].append(os.path.join(img_dir, cls_name, ipath))
     for k in cls_img_path.keys():
         print('cls', k, 'num', len(cls_img_path[k]))
-    #sys.exit(0)
-    game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(19999, 20000)]
+    return cls_img_path
+
+
+if __name__ == "__main__":
+    # assign img_path to each init_game_data
+    game_data_root_dir = '/root/Desktop/hunter/init_game_data/debug/4/'
+    # read all img_paths of each class under img_dir
+    img_dir = '/root/Desktop/hunter/data_v1030/round0_eval/'
+    cls_img_path = get_cls_img_path(img_dir)
+    game_data_dirs = [os.path.join(game_data_root_dir, f'{i:05}') for i in range(19998, 20000)]
+    cls_cnt = {k: 0 for k in cls_img_path.keys()}  # current use img count for each class
     for gdd in game_data_dirs:
         grid_i = np.load(os.path.join(gdd, 'grid.npy'))
         print(grid_i[:3, :3])
-        img_path_i = [[] for _ in range(grid_i.shape[0])]
+        img_path_i = [[] for _ in range(grid_i.shape[0])]  # (size, size)
         for row in range(grid_i.shape[0]):
             for col in range(grid_i.shape[1]):
-                img_path_i[row].append(cls_img_path[grid_i[row, col]].pop(0))
+                cls_rc = grid_i[row, col]
+                idx = cls_cnt[cls_rc]%len(cls_img_path[cls_rc])
+                img_path_rc = cls_img_path[cls_rc][idx]
+                img_path_i[row].append(img_path_rc)
+                cls_cnt[cls_rc] += 1
         np.save(os.path.join(gdd, 'img_path.npy'), np.array(img_path_i))
         img_path_i = np.load(os.path.join(gdd, 'img_path.npy'))
         print(img_path_i[:3, :3])
-        print(type(str(img_path_i[0, 0])))
+    print(cls_cnt, sum(cls_cnt.values()))
