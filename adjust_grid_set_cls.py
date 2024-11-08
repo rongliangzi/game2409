@@ -28,26 +28,25 @@ def adjust_one_pair(grid_li, cur, tgt):
         if p_diff < min_diff:
             min_diff = p_diff
             l_cls = k
-    print('h_cls', h_cls, 'l_cls', l_cls)
-    for grid_i in grid_li:
-        print(grid_i.shape)
+    for i, grid_i in enumerate(grid_li):
         h_cnt = (grid_i == h_cls).sum()
         l_cnt = (grid_i == l_cls).sum()
-        print('h_cnt', h_cnt, 'l_cnt', l_cnt)
+        #print(f'i{i} h cls{h_cls}, cnt {h_cnt}, l cls{l_cls}, cnt {l_cnt}')
         if h_cnt > l_cnt:
             cur[h_cls] -= (h_cnt - l_cnt)
             cur[l_cls] += (h_cnt - l_cnt)
             grid_i[grid_i == h_cls] = -1
+            grid_i[grid_i == l_cls] = -2
             grid_i[grid_i == -1] = l_cls
-            grid_i[grid_i == l_cls] = h_cls
+            grid_i[grid_i == -2] = h_cls
             break
 
 
 if __name__ == '__main__':
     # set 1. root_dir, game_data_dir. 2. threshold 3. target_cls_distribution (now fixed)
     # to make class distribution close to target class distribution
-    root_dir = '/root/Desktop/hunter/init_game_data/debug/4/'
-    game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(19995, 20000)]
+    root_dir = '/root/Desktop/hunter/init_game_data/round0_test/2/'
+    game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(0, 200)]
     class_num = dict()
     target_cls_distribution = dict()
     for i in range(20):
@@ -72,7 +71,11 @@ if __name__ == '__main__':
     print('class num', class_num)
     grid_sum = sum(class_num.values())
     print('class sum on all grids:', grid_sum)
-    while not can_end(class_num, target_cls_distribution, 0.1):
+    for _ in range(3000):
+        if can_end(class_num, target_cls_distribution, 0.002):
+            break
         adjust_one_pair(grid_li, class_num, target_cls_distribution)
     print('class num', class_num)
-    # 
+    # save new
+    for i, gdd in enumerate(game_data_dirs):
+        np.save(os.path.join(gdd, 'grid.npy'), grid_li[i])
