@@ -89,7 +89,7 @@ def handle_continue(data):
             if grid_pred.size == grid_label.size:
                 correct = (grid_pred == grid_label).astype(int)
                 sid_game[sid]['acc'] = (correct).sum() / grid_label.size
-                mask = game_info['env'].unwrapped.get_mask()  # 1d
+                mask = sid_game[sid]['env'].unwrapped.get_mask()  # 1d
                 sid_game[sid]['correct_n'] = (mask * correct).sum()
     bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     send_data = {'team_id': team_id, 'game_id': game_id, 'rounds': sid_game[sid]['rounds'], 
@@ -122,7 +122,6 @@ def handle_begin(data):
     team_id = data['team_id']
     debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
     global cur_ip, cur_port
-    print('cur_ip', cur_ip, 'cur_port', cur_port)
     if team_id not in team_id_info and (not any([team_id.startswith(v) for v in debug_id])):
         emit('response', {'error': 'Illegal team_id'})
     elif (team_id in team_id_info) and ('ip' in team_id_info['team_id']) and (team_id_info['team_id']['ip'] != cur_ip):
