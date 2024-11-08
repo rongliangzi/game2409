@@ -96,6 +96,11 @@ def check_begin(main_cfg, begin):
 def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
     cfg['init_grid'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'grid.npy')).astype(int)
     cfg['init_loc'] = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'loc.npy')).astype(int)
+    img_path = np.load(os.path.join(main_cfg['init_game_data_dir'], type_dir, game_data_id, 'img_path.npy'))
+    cfg['img_path'] = []
+    for row in img_path.shape[0]:
+        for col in img_path.shape[1]:
+            cfg['img_path'].append(str(img_path[i][j]))
 
 
 def get_game_id_dir(main_cfg, team_id, time_key):
