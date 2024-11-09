@@ -81,7 +81,11 @@ if __name__ == "__main__":
             shutil.copy(os.path.join(src_dir, gdi, 'grid.npy'), os.path.join(aim_dir, new_gdi, 'grid.npy'))
             shutil.copy(os.path.join(src_dir, gdi, 'loc.npy'), os.path.join(aim_dir, new_gdi, 'loc.npy'))
     src_dir = '/root/Desktop/hunter/init_game_data/debug/2/'
-    test_dir = '/root/Desktop/hunter/init_game_data/round0_test/2/'
-    copy_game_data(src_dir, test_dir, sort_game_data[:200])
-    eval_dir = '/root/Desktop/hunter/init_game_data/round0_eval/2/'
-    copy_game_data(src_dir, eval_dir, sort_game_data[200:300])
+    test_dira = '/root/Desktop/hunter/init_game_data/round0_test/a/'
+    copy_game_data(src_dir, test_dira, sort_game_data[:200])
+    test_dir2 = '/root/Desktop/hunter/init_game_data/round0_test/2/'
+    copy_game_data(src_dir, test_dir2, sort_game_data[200:400])
+    eval_dira = '/root/Desktop/hunter/init_game_data/round0_eval/a/'
+    copy_game_data(src_dir, eval_dira, sort_game_data[400:500])
+    eval_dir2 = '/root/Desktop/hunter/init_game_data/round0_eval/2/'
+    copy_game_data(src_dir, eval_dir2, sort_game_data[400:500])
