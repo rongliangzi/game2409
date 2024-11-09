@@ -14,8 +14,8 @@ if __name__=="__main__":
     save_dir = cfg['save_dir']
     all_teams = os.listdir(save_dir)
     for team_id in all_teams:
-        team_stats = {'cum_score': [], 'game_type': [], 'game_data_id': [], 'rounds': [], 'acc': []}
-        index = []
+        team_stats = {'cum_score': [], 'game_type': [], 'game_data_id': [], 'rounds': [], 'acc': [], 'correct_n': []}
+        df_index = []
         # iterate on all teams
         team_dir = os.path.join(save_dir, team_id)
         if not os.path.isdir(team_dir):
@@ -30,7 +30,7 @@ if __name__=="__main__":
                     f.write(f',,cum_score,game_type,game_data_id,rounds,acc\n,,0,2,00000,0,0')
             continue
         all_game_key = os.listdir(team_dir)
-        print(f'Stats {team_id}')
+        #print(f'Stats {team_id}')
         for game_key in all_game_key:
             # all games of one team
             if game_key == 'public':
@@ -50,14 +50,14 @@ if __name__=="__main__":
                     continue
                 game_result['game_type'] = game_result['begin'][0]
                 game_result['game_data_id'] = game_result['begin'][1:]
-                del game_result['begin']
+                #del game_result['begin']
                 for k in team_stats.keys():
-                    team_stats[k].append(game_result[k])
-                index.append((team_id, game_key))
+                    team_stats[k].append(game_result.get(k, 0))
+                df_index.append((team_id, game_key))
             except Exception as e:
                 print(f'Exception {e} when loading {game_result_path}')
                 #shutil.rmtree(os.path.join(team_dir, game_key))
-        if len(index) == 0:
+        if len(df_index) == 0:
             continue
-        df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(index))
+        df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(df_index))
         df.to_csv(os.path.join(team_dir, f'team_stats.csv'))
