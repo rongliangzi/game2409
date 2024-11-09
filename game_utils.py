@@ -10,7 +10,7 @@ import fcntl
 action_only_game_types = ['a', 'b', 'c', 'd']
 full_game_types = [str(i) for i in range(10)]
 all_game_types = action_only_game_types + full_game_types
-game_type_dic = {'a': '2', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
+game_type_dic = {'a': 'a', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
 
 
 def gen_game_result(game_dir, begin):
