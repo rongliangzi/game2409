@@ -35,6 +35,8 @@ if __name__=="__main__":
             # all games of one team
             if game_key == 'public':
                 continue
+            if game_key.startswith('2024110'):
+                continue
             cur_path = os.path.join(team_dir, game_key)
             if not os.path.isdir(cur_path):
                 continue
