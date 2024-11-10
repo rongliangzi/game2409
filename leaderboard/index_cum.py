@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+import os
 import numpy as np
 import pandas as pd
 
@@ -35,7 +36,14 @@ def index():
         tstats_df = pd.concat(tstats_df)
         tstats_df = tstats_df.sort_values(by='tstats_cum', ascending=False)
         tstats_df = tstats_df.dropna(subset=['tstats_cum'])
-
+    
+    if os.path.exists('../team_game_data/tstats_cum.csv'):
+        tstats_df = pd.concat([
+            tstats_df,
+            pd.read_csv(f'../team_game_data/tstats_cum.csv', index_col = 0)
+        ])
+        tstats_df = tstats_df.sort_values(by='tstats_cum', ascending=False)
+    
     # 将CSV数据传递到HTML模板
     teams = tstats_df.to_dict(orient='records')
     return render_template('index_cum.html', teams=teams)
