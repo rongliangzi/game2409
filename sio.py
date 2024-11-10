@@ -53,7 +53,10 @@ def init_game2(team_id, main_cfg, begin):
     game_env = gym.make('gymnasium_env/GAME', **env_args)
     obs, info = game_env.reset()
     # return all -2 grid for full game when step=0
-    grid = np.zeros_like(obs['grid'])-2 if game_type in full_game_types else obs['grid']
+    grid = obs['grid']
+    if game_type in full_game_types:
+        if not game_id.startswith('lzrongdebug'):
+            grid = np.zeros_like(obs['grid'])-2
     return obs['image'].tolist(), obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), game_id, game_env
 
 
@@ -81,7 +84,7 @@ def handle_continue(data):
     game_id = data['game_id']
     action = data['action']
     sid_game[sid]['rounds'] += 1
-    if sid_game[sid]['rounds'] == 1 and sid_game[sid]['game_data_id'][0] in ['2', '3', '4']:
+    if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4'] or team_id.startswith('lzrongdebug')):
         # full game receive prediction, calculate accuracy
         grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flatten()
         if 'grid_pred' in data:
@@ -153,7 +156,7 @@ def handle_begin(data):
             send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
             if game_type in ['2', '3', '4']:
                 send_data['img'] = img
-            elif game_type in ['a', 'b', 'c']:
+            if game_type in ['a', 'b', 'c'] or team_id.startswith('lzrongdebug'):
                 send_data['grid'] = grid
             game_info = {'team_id': team_id, 'game_id': game_id, 'env': env, 'game_data_id': data['begin'],
                          'rounds': 0, 'last_send_time': datetime.now(), 'interval': []}
