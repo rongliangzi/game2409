@@ -20,19 +20,19 @@ def get_cls_img_path(img_dir):
 
 if __name__ == "__main__":
     # assign img_path to each init_game_data
-    game_data_root_dir = '/root/Desktop/hunter/init_game_data/round0_eval/2/'
+    game_data_root_dir = '/root/Desktop/hunter/init_game_data/round0_test/2/'
     # read all img_paths of each class under img_dir
-    img_dir = '/root/Desktop/hunter/data_v1107_noise/round0_eval/'
+    img_dir = '/root/Desktop/hunter/data_v1107_noise/round0_test/'
     cls_img_path = get_cls_img_path(img_dir)
-    game_data_dirs = [os.path.join(game_data_root_dir, f'{i:05}') for i in range(0, 100)]
+    game_data_dirs = [os.path.join(game_data_root_dir, f'{i:05}') for i in range(0, 200)]
     cls_cnt = {k: 0 for k in cls_img_path.keys()}  # current use img count for each class
     
     class_num = dict()
     # num over this will record 0
     num_each_cls = dict()
     for i in range(20):
-        num_each_cls[i] = 100
-    num_each_cls[20] = 400
+        num_each_cls[i] = 500
+    num_each_cls[20] = 2000
     count_n = 0
     for gdd in game_data_dirs:
         grid_i = np.load(os.path.join(gdd, 'grid.npy'))

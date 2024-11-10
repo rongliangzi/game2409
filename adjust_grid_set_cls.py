@@ -45,20 +45,14 @@ def adjust_one_pair(grid_li, cur, tgt):
 if __name__ == '__main__':
     # set 1. root_dir, game_data_dir. 2. threshold 3. target_cls_distribution (now fixed)
     # to make class distribution close to target class distribution
-    root_dir = '/root/Desktop/hunter/init_game_data/round0_test/2/'
-    game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(0, 200)]
+    root_dir = '/root/Desktop/hunter/init_game_data/round0_eval/2/'
+    game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(0, 100)]
     class_num = dict()
     target_cls_distribution = dict()
     for i in range(20):
         target_cls_distribution[i] = 100
     target_cls_distribution[20] = 400
     print('target_cls_distribution', target_cls_distribution)
-    '''
-    target_sum = sum(target_cls_distribution.values())
-    for k in target_cls_distribution.keys():
-        target_cls_distribution[k] /= target_sum
-    print('target_cls_distribution', target_cls_distribution)
-    '''
     grid_li = []
     for gdd in game_data_dirs:
         grid_i = np.load(os.path.join(gdd, 'grid.npy'))
