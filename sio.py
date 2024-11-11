@@ -125,19 +125,25 @@ def handle_begin(data):
     team_id = data['team_id']
     debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
     global cur_ip, cur_port
-    if team_id not in team_id_info and (not any([team_id.startswith(v) for v in debug_id])):
+    if (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
+        #print('check team_id')
         emit('response', {'error': 'Illegal team_id'})
-    elif (team_id in team_id_info) and ('ip' in team_id_info['team_id']) and (team_id_info['team_id']['ip'] != cur_ip):
+    elif (team_id in team_id_info) and ('ip' in team_id_info[team_id]) and (team_id_info[team_id]['ip'] != cur_ip):
         # check ip only if ip info exists
-        emit('response', {'error': f'Error: IP not correct, can only be {team_id_info["team_id"]["ip"]}'})
-    elif (team_id in team_id_info) and ('port' in team_id_info['team_id']) and (team_id_info['team_id']['port'] != cur_port):
+        #print('check ip')
+        emit('response', {'error': f'Error: IP not correct, can only be {team_id_info[team_id]["ip"]}'})
+    elif (team_id in team_id_info) and ('port' in team_id_info[team_id]) and (team_id_info[team_id]['port'] != cur_port):
         # check port only if port info exists
-        emit('response', {'error': f'Error: port not correct, can only be {team_id_info["team_id"]["port"]}'})
+        #print('check port')
+        emit('response', {'error': f'Error: port not correct, can only be {team_id_info[team_id]["port"]}'})
     elif sum(team_connect.values()) >= max_total_connect:
+        #print('check max total conect')
         emit('response', {'error': 'cannot begin because server overloading, wait'})
     elif team_connect.get(team_id, 0) >= main_cfg['team_max_connections']:
+        #print('check team max connect')
         emit('response', {'error': 'cannot begin because reaching max connections'})
     elif not begin_if_can(team_id, main_cfg):
+        #print('check team max game n')
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
     else:
         try:
