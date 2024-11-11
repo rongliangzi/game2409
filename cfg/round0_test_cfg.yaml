@@ -16,6 +16,11 @@ param2:
   cls_n: 21
   elim_n: 4
   max_steps_k: 4
+parama:
+  size: 12
+  cls_n: 21
+  elim_n: 4
+  max_steps_k: 4
 param3:
   size: 12
   cls_n: 21
