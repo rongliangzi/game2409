@@ -21,7 +21,7 @@ if __name__=="__main__":
         if not os.path.isdir(team_dir):
             continue
         now = datetime.now()
-        if now < datetime(2024, 11, 11, 2, 00, 00) and not any(team_id.startswith(sp) for sp in ['lzrong', 'zzxu', 'zhli']):
+        if now < datetime(2024, 11, 11, 1, 47, 00) and not any(team_id.startswith(sp) for sp in ['lzrong', 'zzxu', 'zhli']):
             # before round0, only use public dir data to generate team_stats
             if os.path.exists(f'{team_dir}/team_stats.csv'):
                 os.remove(f'{team_dir}/team_stats.csv')
