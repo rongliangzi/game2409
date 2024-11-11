@@ -62,8 +62,13 @@ if __name__=="__main__":
                 #shutil.rmtree(os.path.join(team_dir, game_key))
         if len(df_index) == 0:
             # default=-9999
+            '''
             df_index = [(team_id, 'default_2'), (team_id, 'default_a')]
             team_stats = {'cum_score': [-9999, -9999], 'game_type': ['2', 'a'], 'game_data_id': ['00000', '00000'], 
                           'rounds': [576, 576], 'acc': [0, 0], 'correct_n': [0, 0]}
+                          '''
+            with open(f'{team_dir}/team_stats.csv', 'w') as f:
+                f.write(f',,cum_score,game_type,game_data_id,rounds,acc')
+            continue
         df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(df_index))
         df.to_csv(os.path.join(team_dir, f'team_stats.csv'))
