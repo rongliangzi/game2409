@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【字符猎手】初赛-总榜</title>
+    <title>【字符猎手】初赛-识别榜</title>
     <style>
         body {
             background: linear-gradient(to right, #141e30, #243b55); /* 深蓝到深紫渐变背景 */
@@ -84,21 +84,21 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
 		.table-image {
-			max-width: 40px;
-			max-height: 40px;
+			max-width: 50px;
+			max-height: 50px;
 			width: auto;
 			height: auto;
 		}
     </style>
 </head>
 <body>
-    <h1>【字符猎手】初赛-总榜</h1>
+    <h1>【字符猎手】初赛-识别榜</h1>
     <table>
 			<thead>
                 <tr>
                     <th>Rank</th>
                     <th>Team Name</th>
-                    <th>Total Score</th>
+                    <th>Accuracy</th>
                     <th>Game_data_id Count</th>
                 </tr>
             </thead>
@@ -117,7 +117,7 @@
 					{% endif %}
 					</td>
                     <td class="teamid">{{ team['teamname'] }}</td>
-                    <td class="score">{{ team['tstats_cum'] | round(2) }}</td>
+                    <td class="score">{{ team['tstats_acc'] | round(5) }}</td>
                     <td class="score">{{ team['tstats_cnt'] }}</td>
                 </tr>
                 {% endfor %}

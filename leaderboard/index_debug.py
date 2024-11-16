@@ -28,7 +28,13 @@ def index():
             continue
     if len(tstats_df) == 0:
         tstats_df = pd.DataFrame(
-            columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str', 'tstats_cnt']
+            [
+                ['debug', 'debug', 0, 0, 0, 0],
+                ['debug', 'debug', 0, 0, 0, 0],
+                ['debug', 'debug', 0, 0, 0, 0],
+                ['debug', 'debug', 0, 0, 0, 0],
+            ],
+            columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str','tstats_cnt']
         )
     else:
         tstats_df = pd.concat(tstats_df)
@@ -44,7 +50,7 @@ def index():
     
     # 将CSV数据传递到HTML模板
     teams = tstats_df.to_dict(orient='records')
-    return render_template('index_acc.html', teams=teams)
+    return render_template('index_debug.html', teams=teams)
 
 if __name__ == '__main__':
     app.run(debug=True)

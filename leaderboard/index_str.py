@@ -17,16 +17,17 @@ def index():
             tstats_cum = tstats_type0.groupby(['game_data_id'])['cum_score'].max().reset_index()['cum_score'].mean()
             tstats_acc = tstats_type0.groupby(['game_data_id'])['acc'].max().reset_index()['acc'].mean()
             tstats_str = tstats_type1.groupby(['game_data_id'])['cum_score'].max().reset_index()['cum_score'].mean()
+            tstats_cnt = tstats_type1.groupby(['game_data_id'])['cum_score'].max().reset_index()['cum_score'].count()
             tstats = pd.DataFrame(
-                [[tname, tid, tstats_cum, tstats_acc, tstats_str]],
-                columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str']
+                [[tname, tid, tstats_cum, tstats_acc, tstats_str, tstats_cnt]],
+                columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str', 'tstats_cnt']
             )
             tstats_df.append(tstats)
         except:
             continue
     if len(tstats_df) == 0:
         tstats_df = pd.DataFrame(
-            columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str']
+            columns = ['teamname', 'teamid', 'tstats_cum', 'tstats_acc', 'tstats_str', 'tstats_cnt']
         )
     else:
         tstats_df = pd.concat(tstats_df)

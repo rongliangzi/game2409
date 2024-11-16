@@ -3,83 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>字符猎手 初赛-识别榜</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>【字符猎手】初赛-识别榜</title>
     <style>
         body {
-            background-color: #F5F5F5;
-            padding-top: 20px;
+            background: linear-gradient(to right, #141e30, #243b55); /* 深蓝到深紫渐变背景 */
+            color: #f0f0f0; /* 白色文字 */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 保证标题处于顶部 */
+            align-items: center;
         }
+
         h1 {
+			color: #4fa3ff; /* 科幻感蓝色 */
+			font-size: 36px;
+			text-shadow: 0 0 10px rgba(255, 255, 255, 0.6); /* 文字发光效果 */
+			margin-top: 0;
+			padding: 20px 0;
+			width: 100%;
+			text-align: center;
+		}
+
+		table {
+			width: 80%;
+			border-collapse: collapse;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+			margin-top: 0px;
+			margin-bottom: 0; /* 去掉表格底部边距 */
+		}
+
+        th {
+            background: linear-gradient(45deg, #6a11cb, #2575fc); /* 渐变的表头背景 */
+            color: #fff;
+            padding: 12px;
             text-align: center;
-            margin-bottom: 30px;
-            color: #343a40;
-        }
-        table {
-            margin: 0 auto;
-            width: 50%;
-        }
-        img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-        }
-        .medal {
-            max-width: 30px; 
-            color: #343a40;
-        }
-        .teamid {
-            font-weight: bold;
-            max-width: 100px;
-            max-height: 20px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .score {
-            max-width: 30px; 
             font-size: 18px;
-            font-weight: bold;
+            border-radius: 10px 10px 0 0; /* 圆角表头 */
         }
-        .acc {
-            max-width: 30px; 
-            font-size: 18px;
-            font-weight: bold;
+
+        td {
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
         }
-        .table-wrapper {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            background-color: white;
-            padding: 20px;
+
+        td:nth-child(even) {
+            background-color: #2b3e59; /* 奇偶行颜色区分 */
         }
-        .banner {
-            display: block;
-            margin: 0 auto;
-            width: 80%;
-            max-width: 800px;
-            height: auto;
-            max-height: 200px;
-            object-fit: contain;
-            margin-bottom: 20px;
+
+        td:nth-child(odd) {
+            background-color: #1f2d3b;
         }
-		.pink-background {
-            background-color: #FAF0E6;
+
+        tr:hover td {
+            background-color: #4fa3ff; /* 鼠标悬停时高亮 */
+            color: #fff;
+            transform: scale(1.05); /* 鼠标悬停时放大 */
         }
+
+        .button {
+            background: #4fa3ff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: #2575fc; /* 鼠标悬停时按钮颜色变化 */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+		.table-image {
+			max-width: 40px;
+			max-height: 40px;
+			width: auto;
+			height: auto;
+		}
     </style>
 </head>
 <body>
-	
-    <div class="container">
-        <h1>【字符猎手】初赛-识别榜</h1>
-		<img src={{ url_for('static', filename='images/photo.jpg') }} alt="ban" 
-		class="banner">
-        		
-		<table class="table table-hover table-bordered text-center">
-            <thead class="thead-dark">
+    <h1>【字符猎手】初赛-识别榜</h1>
+    <table>
+			<thead>
                 <tr>
                     <th>Rank</th>
                     <th>Team Name</th>
                     <th>Accuracy</th>
+                    <th>Game_data_id Count</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,25 +107,23 @@
                 <tr class="{% if loop.index <= 10 %}pink-background{% endif %}">
                     <td class="medal">
 					{% if loop.index == 1 %}
-					<img src="{{ url_for('static', filename='images/gold-medal.png') }}" alt="th1">
+					<img src="{{ url_for('static', filename='images/gold-medal.png') }}" alt="th1" class="table-image">
 					{% elif loop.index == 2 %}
-					<img src="{{ url_for('static', filename='images/silver-medal.png') }}" alt="th2">
+					<img src="{{ url_for('static', filename='images/silver-medal.png') }}" alt="th2" class="table-image">
 					{% elif loop.index == 3 %}
-					<img src="{{ url_for('static', filename='images/bronze-medal.png') }}" alt="th3">
+					<img src="{{ url_for('static', filename='images/bronze-medal.png') }}" alt="th3" class="table-image">
 					{% else %}
 					{{loop.index}}
 					{% endif %}
 					</td>
                     <td class="teamid">{{ team['teamname'] }}</td>
-                    <td class="score">{{ team['tstats_acc'] | round(2) }}</td>
+                    <td class="score">{{ team['tstats_acc'] | round(5) }}</td>
+                    <td class="score">{{ team['tstats_cnt'] }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	
+	
+    </table>
 </body>
 </html>
