@@ -9,6 +9,8 @@ if __name__ == "__main__":
     team_game_data = './team_game_data/'
     teams = os.listdir(team_game_data)
     type_team_time = {'2': {}, 'a': {}}
+    min_cum_score = 0
+    start_date = 20241115
     for team_id in teams:
         if not os.path.isdir(os.path.join(team_game_data, team_id)):
             continue
@@ -24,6 +26,9 @@ if __name__ == "__main__":
             game_dir = os.path.join(team_game_data, team_id, game_id)
             if not os.path.isdir(game_dir):
                 continue
+            game_date = int(game_id.split('-')[0])
+            if game_date < start_date:
+                continue
             #print(game_id)
             if 'a' in game_id:
                 game_id = game_id[:game_id.index('a')]
@@ -35,6 +40,8 @@ if __name__ == "__main__":
             try:
                 with open(game_result_path, 'rb') as f:
                     game_result = pickle.load(f)
+                if game_result['cum_score'] < min_cum_score:
+                    continue
                 game_type = game_result['begin'][0]
                 mtime = os.path.getmtime(game_result_path)
                 game_ed_time = datetime.fromtimestamp(mtime)
@@ -48,12 +55,14 @@ if __name__ == "__main__":
                 #break
                 pass
     for k in type_team_time.keys():
-        print('type', k)
+        print('='*20, 'Game type', k, '='*20)
+        print(f'Only consider games after {start_date}, cum_score > {min_cum_score}')
+        #print('teams', type_team_time[k].keys())
         team_avg = [np.mean(v) for v in type_team_time[k].values()]
-        print('Calculate avg on each team')
+        print(f'Calculate avg on each team, total {len(team_avg)} teams')
         for p in range(10, 100, 20):
             print(f'percentile {p} time: {np.percentile(team_avg, p):.2f}s')
-        print('On all teams')
         all_time = [t for v in type_team_time[k].values() for t in v]
+        print(f'On all teams, total {len(all_time)} games')
         for p in range(10, 100, 20):
             print(f'percentile {p} time: {np.percentile(all_time, p):.2f}s')
