@@ -47,7 +47,7 @@ def dfs(grid, arrival, loc, bag, path, rew, not_collect_first):
     # not_collect_first: not collect exist in path
     #if path == [1,4,1,4,0,4,3,4,0,4,1,4,0,4,3,4,3,4,3,4,2,4,1,4,2,4,3,4,2,4]:
     #    print(path)
-    if (arrival!=0).sum() > 3 and arrival.sum() / (arrival!=0).sum() > 1.1:
+    if (arrival!=0).sum() > 3 and arrival.sum() / (arrival!=0).sum() > 1.2:
         return path, -1e6, not_collect_first
     if (len(path) > 3) and (path.count(4) / len(path)< 0.3):
         return path, -1e6, not_collect_first
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     elim_n = 4
     cpu_cnt = mp.cpu_count()
     print(f'CPU count: {cpu_cnt}')
-    params = [(size, cls_n, elim_n, i) for i in range(30000)]
+    params = [(size, cls_n, elim_n, i) for i in range(3000)]
     with mp.Pool(cpu_cnt//2-10) as pool:
         result = pool.starmap_async(random_init_search, params)
         results = result.get()
