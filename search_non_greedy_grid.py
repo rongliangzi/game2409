@@ -154,7 +154,7 @@ if __name__ == "__main__":
     elim_n = 4
     cpu_cnt = mp.cpu_count()
     print(f'CPU count: {cpu_cnt}')
-    params = [(size, cls_n, elim_n, i) for i in range(30000)]
+    params = [(size, cls_n, elim_n, i) for i in range(10000)]
     with mp.Pool(cpu_cnt//2-10) as pool:
         result = pool.starmap_async(random_init_search, params)
         results = result.get()
