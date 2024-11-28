@@ -5,9 +5,14 @@ import pandas as pd
 import pickle
 from datetime import datetime
 import shutil
+import argparse
 
 
 if __name__=="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--st', type=str, default='')
+    parser.add_argument('--ed', type=str, default='')
+    args = parser.parse_args()
     # run this file to get game stats for each team
     with open('./cfg/debug_cfg.yaml') as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
@@ -46,6 +51,10 @@ if __name__=="__main__":
             game_result_path = os.path.join(team_dir, game_key, 'game_result.pkl')
             if not os.path.exists(game_result_path):
                 continue
+            if (args.st!='') and (int(game_key[:8]) < int(args.st)):
+                continue
+            if (args.ed!='') and (int(game_key[:8]) > int(args.ed)):
+                continue
             try:
                 with open(game_result_path, 'rb') as f:
                     game_result = pickle.load(f)
@@ -71,4 +80,8 @@ if __name__=="__main__":
                 f.write(f',,cum_score,game_type,game_data_id,rounds,acc')
             continue
         df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(df_index))
-        df.to_csv(os.path.join(team_dir, f'team_stats.csv'))
+        if (args.st!='') or (args.ed!=''):
+            df.to_csv(os.path.join(team_dir, f'team_stats_st{args.st}ed{args.ed}.csv'))
+        else:
+            df.to_csv(os.path.join(team_dir, f'team_stats.csv'))
+
