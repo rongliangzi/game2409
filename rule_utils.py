@@ -20,22 +20,6 @@ def read_team_id(team_id_path):
     return team_id_info
 
 
-def lock_rw_txt(fpath, max_n):
-    # not exist: create, write 1, return 0
-    # count >= max_n, not change, return count
-    # count <max_n, write count + 1, return count
-    file_desc = os.open(fpath, os.O_RDWR|os.O_CREAT)
-    with os.fdopen(file_desc, 'r+') as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
-        f.seek(0)
-        content = f.read().strip()
-        count = int(content) if content else 0
-        f.seek(0)
-        f.write(str(min(count+1, max_n)))
-        f.truncate()
-        fcntl.flock(f, fcntl.LOCK_UN)
-        return count
-
 def check_connections(team_id, cfg, refresh=False):
     # check if current connection reach up limit
     connect_fpath = os.path.join(cfg['save_dir'], team_id, 'connections.txt')
@@ -62,6 +46,23 @@ def check_connections(team_id, cfg, refresh=False):
     return connect_n < cfg['team_max_connections']
 
 
+def lock_rw_txt(fpath, max_n):
+    # not exist: create, write 1, return 0
+    # count >= max_n, not change, return count
+    # count < max_n, write count + 1, return count
+    file_desc = os.open(fpath, os.O_RDWR|os.O_CREAT)
+    with os.fdopen(file_desc, 'r+') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        content = f.read().strip()
+        count = int(content) if content else 0
+        f.seek(0)
+        f.write(str(min(count+1, max_n)))
+        f.truncate()
+        fcntl.flock(f, fcntl.LOCK_UN)
+        return count
+
+
 def begin_if_can(team_id, cfg):
     # check if team_id has run out game time, update txt
     now = datetime.now()
@@ -71,3 +72,35 @@ def begin_if_can(team_id, cfg):
     team_day_fpath = os.path.join(day_dir, f'{team_id}_game_n.txt')
     team_day_n = lock_rw_txt(team_day_fpath, cfg['max_n'])
     return team_day_n < cfg['max_n']
+
+
+def safe_rw_game_id_txt(fpath, game_data_id, max_game_n):
+    # not exist: create, write game_data_id, return True
+    # count >= max_game_n, not change, return False
+    # count < max_game_n, write game_data_id, return True
+    try:
+        with open(fpath, 'a+') as f:
+            fcntl.flock(f. fcntl.LOCK_EX)
+            f.seek(0)
+            content = f.read()
+            count = content.splitlines().count(s)
+            if count >= max_game_n:
+                return False
+            f.write(game_data_id+'\n')
+            f.flush()
+            fcntl.flock(f, fcntl.LOCK_UN)
+            return True
+    except Exception as e:
+        print(f'Error occurred in safe_rw_game_id_txt {e}')
+        return False
+
+
+def begin_game_if_can(team_id, game_data_id, cfg):
+    # check if team_id has finish game data id, update txt
+    now = datetime.now()
+    yymmdd = now.strftime("%Y%m%d")
+    day_dir = os.path.join(cfg['save_dir'], yymmdd)
+    os.makedirs(day_dir, exist_ok=True)
+    team_day_fpath = os.path.join(day_dir, f'{team_id}_game_finish.txt')
+    max_game_n = cfg.get('max_game_n', 10000)
+    return safe_rw_game_id_txt(team_day_fpath, game_data_id, max_game_n)

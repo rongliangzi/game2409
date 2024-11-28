@@ -127,7 +127,7 @@ def handle_continue(data):
 def handle_begin(data):
     print(f'Begin : {data}')
     team_id = data['team_id']
-    debug_id = ['zhli', 'lzrong', 'zzxu', 'jhniu']
+    debug_id = ['2hl1', 'l2r0ng', '22xu', 'jhn1u']
     global cur_ip, cur_port
     if (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
         #print('check team_id')
@@ -140,15 +140,18 @@ def handle_begin(data):
         # check port only if port info exists
         #print('check port')
         emit('response', {'error': f'Error: port not correct, can only be {team_id_info[team_id]["port"]}'})
-    elif sum(team_connect.values()) >= max_total_connect:
-        #print('check max total conect')
-        emit('response', {'error': 'cannot begin because server overloading, wait'})
+    #elif sum(team_connect.values()) >= max_total_connect:
+    #    #print('check max total conect')
+    #    emit('response', {'error': 'cannot begin because server overloading, wait'})
     elif team_connect.get(team_id, 0) >= main_cfg['team_max_connections']:
         #print('check team max connect')
         emit('response', {'error': 'cannot begin because reaching max connections'})
     elif not begin_if_can(team_id, main_cfg):
-        #print('check team max game n')
+        #print('check team game n')
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
+    elif not begin_game_if_can(team_id, data['begin'], main_cfg):
+        print('check team n on one game')
+        emit('response', {'error': f'Team {team_id} has run out of time {main_cfg.get("max_n", 10000)} on game {data["begin"]}'})
     else:
         try:
             begin_num = sum([v.get('rounds',-1)==0 for v in sid_game.values()]) if len(sid_game) > 0 else 0
