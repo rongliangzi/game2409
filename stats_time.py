@@ -9,8 +9,8 @@ if __name__ == "__main__":
     team_game_data = './team_game_data/'
     teams = os.listdir(team_game_data)
     type_team_time = {'2': {}, 'a': {}}
-    min_cum_score = 0
-    start_date = 20241115
+    min_cum_score = -300
+    start_date = 20241112
     for team_id in teams:
         if not os.path.isdir(os.path.join(team_game_data, team_id)):
             continue
