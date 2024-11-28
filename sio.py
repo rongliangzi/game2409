@@ -75,7 +75,10 @@ def handle_continue(data):
     sid = request.sid
     # interval from last send time to this receive time
     now = datetime.now()
-    t_diff = now - sid_game[sid]['last_send_time']
+    if 'last_send_time' not in sid_game[sid]:
+        t_diff = 0.1
+    else:
+        t_diff = now - sid_game[sid]['last_send_time']
     diff_seconds = t_diff.total_seconds()  # float
     sid_game[sid]['interval'].append(diff_seconds)
     if sid in begin_sid:
@@ -103,6 +106,7 @@ def handle_continue(data):
         game_info = sid_game[sid]
         median_itv = np.median(game_info['interval'])
         time_penalty = get_time_penalty(median_itv, main_cfg, game_id)
+        send_data['time_penalty'] = time_penalty
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
