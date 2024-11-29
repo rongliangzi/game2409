@@ -131,9 +131,9 @@ def handle_begin(data):
     global cur_ip, cur_port
     if (datetime.now() < datetime.strptime(main_cfg.get('starttime', '2000-01-01-01-00'), '%Y-%m-%d-%H-%M')):
         emit('response', {'error': 'Period does not begin now'})
-    if (datetime.now() > datetime.strptime(main_cfg.get('endtime', '2099-01-01-01-00'), '%Y-%m-%d-%H-%M')):
+    elif (datetime.now() > datetime.strptime(main_cfg.get('endtime', '2099-01-01-01-00'), '%Y-%m-%d-%H-%M')):
         emit('response', {'error': 'Period has end now'})
-    if (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
+    elif (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
         #print('check team_id')
         emit('response', {'error': 'Illegal team_id'})
     elif (team_id in team_id_info) and ('ip' in team_id_info[team_id]) and (team_id_info[team_id]['ip'] != cur_ip):
@@ -154,7 +154,7 @@ def handle_begin(data):
         #print('check team game n')
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
     elif not begin_game_if_can(team_id, data['begin'], main_cfg):
-        print('check team n on one game')
+        print(f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}')
         emit('response', {'error': f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}'})
     else:
         try:
