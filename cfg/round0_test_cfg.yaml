@@ -1,19 +1,22 @@
 save_dir: "./team_game_data/"
 team_id_path: "./team_game_data/team_info_20241104.csv"
-# max times for each team per day
-max_n: 300
-max_n_each_game: 1
-starttime: 2024-12-01-01-00-00
-endtime: 2024-12-01-06-00-00
+# max game begin count for each team per day, no matter finish or not, all types
+max_n: 240
+# max begin count for each team for each {game_type}{game_data_id} per day, no matter finish or not
+max_n_each_game: 2
+# only can begin between starttime and endtime
+starttime: 2024-11-29-01-00
+endtime: 2024-12-01-06-00
+# if median of step time > max_step_seconds, add timeout_penalty, 
+# if median of step time > 2*max_step_seconds, add 10*timeout_penalty
 max_step_seconds: 2.0
 timeout_penalty: -0.1
-  #img_dir: '../data_v1030/round0_test/'
-  #img_path_label_pkl: '../data_v1030/round0_test/img_path_label.pkl'
 cls_names: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20']
 init_game_data_dir: '../init_game_data/round0_test/'
+# max connection of one team at the same time
 team_max_connections: 2
 # max game num in step=0
-max_begin_num: 40
+max_begin_num: 50
 param2:
   size: 12
   cls_n: 21
