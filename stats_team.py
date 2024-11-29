@@ -27,6 +27,7 @@ if __name__=="__main__":
     parser.add_argument('--aed', type=int, default=-1)
     parser.add_argument('--st2', type=int, default=0)
     parser.add_argument('--ed2', type=int, default=-1)
+    parser.add_argument('--verbose', type=int, default=0)
     parser.add_argument('--save_dir', type=str, default="./team_game_data/")
     args = parser.parse_args()
     # run this file to get game stats for each team
@@ -80,7 +81,8 @@ if __name__=="__main__":
             except Exception as e:
                 print(f'Exception {e} when loading {game_result_path}')
                 #shutil.rmtree(os.path.join(team_dir, game_key))
-        print(f'Stats {team_id:>13}, game num: {len(df_index)}')
+        if args.verbose:
+            print(f'Stats {team_id:>13}, game num: {len(df_index)}')
         if (args.ast >=0) and (args.aed > args.ast):
             add_not_finish_game(args.ast, args.aed, 'a', team_stats, df_index, team_id)
         if (args.st2 >=0) and (args.ed2 > args.st2):
