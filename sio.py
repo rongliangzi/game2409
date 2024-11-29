@@ -129,6 +129,10 @@ def handle_begin(data):
     team_id = data['team_id']
     debug_id = ['2hl1', 'l2r0ng', '22xu', 'jhn1u']
     global cur_ip, cur_port
+    if (datetime.now() < datetime.strptime(main_cfg.get('starttime', '2000-01-01-01-00'), '%Y-%m-%d-%H-%M')):
+        emit('response', {'error': 'Period does not begin now'})
+    if (datetime.now() > datetime.strptime(main_cfg.get('endtime', '2099-01-01-01-00'), '%Y-%m-%d-%H-%M')):
+        emit('response', {'error': 'Period has end now'})
     if (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
         #print('check team_id')
         emit('response', {'error': 'Illegal team_id'})
