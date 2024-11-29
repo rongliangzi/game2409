@@ -155,7 +155,7 @@ def handle_begin(data):
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
     elif not begin_game_if_can(team_id, data['begin'], main_cfg):
         print('check team n on one game')
-        emit('response', {'error': f'Team {team_id} has run out of time {main_cfg.get("max_n", 10000)} on game {data["begin"]}'})
+        emit('response', {'error': f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}'})
     else:
         try:
             begin_num = sum([v.get('rounds',-1)==0 for v in sid_game.values()]) if len(sid_game) > 0 else 0

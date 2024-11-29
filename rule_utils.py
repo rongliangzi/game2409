@@ -74,19 +74,19 @@ def begin_if_can(team_id, cfg):
     return team_day_n < cfg['max_n']
 
 
-def safe_rw_game_id_txt(fpath, game_data_id, max_game_n):
+def safe_rw_game_id_txt(fpath, begin_id, max_game_n):
     # not exist: create, write game_data_id, return True
     # count >= max_game_n, not change, return False
     # count < max_game_n, write game_data_id, return True
     try:
         with open(fpath, 'a+') as f:
-            fcntl.flock(f. fcntl.LOCK_EX)
+            fcntl.flock(f, fcntl.LOCK_EX)
             f.seek(0)
             content = f.read()
-            count = content.splitlines().count(s)
+            count = content.splitlines().count(begin_id)
             if count >= max_game_n:
                 return False
-            f.write(game_data_id+'\n')
+            f.write(begin_id+'\n')
             f.flush()
             fcntl.flock(f, fcntl.LOCK_UN)
             return True
@@ -95,12 +95,12 @@ def safe_rw_game_id_txt(fpath, game_data_id, max_game_n):
         return False
 
 
-def begin_game_if_can(team_id, game_data_id, cfg):
+def begin_game_if_can(team_id, begin_id, cfg):
     # check if team_id has finish game data id, update txt
     now = datetime.now()
     yymmdd = now.strftime("%Y%m%d")
     day_dir = os.path.join(cfg['save_dir'], yymmdd)
     os.makedirs(day_dir, exist_ok=True)
     team_day_fpath = os.path.join(day_dir, f'{team_id}_game_finish.txt')
-    max_game_n = cfg.get('max_game_n', 10000)
-    return safe_rw_game_id_txt(team_day_fpath, game_data_id, max_game_n)
+    max_game_n = cfg.get('max_n_each_game', 10000)
+    return safe_rw_game_id_txt(team_day_fpath, begin_id, max_game_n)
