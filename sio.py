@@ -76,10 +76,10 @@ def handle_continue(data):
     # interval from last send time to this receive time
     now = datetime.now()
     if 'last_send_time' not in sid_game[sid]:
-        t_diff = 0.1
+        diff_seconds = 0.1  # float
     else:
         t_diff = now - sid_game[sid]['last_send_time']
-    diff_seconds = t_diff.total_seconds()  # float
+        diff_seconds = t_diff.total_seconds()  # float
     sid_game[sid]['interval'].append(diff_seconds)
     if sid in begin_sid:
         begin_sid.remove(sid)
