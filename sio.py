@@ -215,7 +215,7 @@ def handle_disconnect():
             game_id = sid_game[request.sid]['game_id']
             team_connect[team_id] -= 1
             print(f'[Disconnect] game_id: {game_id}, team current connect: {team_connect[team_id]}')
-        elif ('team_id' in sid_game[request.sid])):
+        elif ('team_id' in sid_game[request.sid]):
             print(f'[Disconnect] team_id: {team_id}')
         else:
             print(f'[Disconnect] {request.sid}, unknown team')
