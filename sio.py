@@ -86,6 +86,9 @@ def handle_continue(data):
     team_id = data['team_id']
     game_id = data['game_id']
     action = data['action']
+    for k, v in data.items():
+        print(f'{k}: {v}', end=' ')
+    print('\nrounds', sid_game[sid]['rounds'])
     sid_game[sid]['rounds'] += 1
     if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4'] or team_id.startswith('lzrongdebug')):
         # full game receive prediction, calculate accuracy
@@ -110,7 +113,7 @@ def handle_continue(data):
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
-        print(f'itv: {median_itv}, acc: {send_data["acc"]}, correct_n: {game_info.get("correct_n", 0)}')
+        print(f'Game: {game_id} itv: {median_itv:.4f}, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
@@ -130,28 +133,31 @@ def handle_begin(data):
     debug_id = ['2hl1', 'l2r0ng', '22xu', 'jhn1u']
     global cur_ip, cur_port
     if (datetime.now() < datetime.strptime(main_cfg.get('starttime', '2000-01-01-01-00'), '%Y-%m-%d-%H-%M')):
+        print('Period does not begin now')
         emit('response', {'error': 'Period does not begin now'})
     elif (datetime.now() > datetime.strptime(main_cfg.get('endtime', '2099-01-01-01-00'), '%Y-%m-%d-%H-%M')):
+        print('Period has end now')
         emit('response', {'error': 'Period has end now'})
     elif (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
-        #print('check team_id')
+        print(f'Illegal team_id {team_id}')
         emit('response', {'error': 'Illegal team_id'})
     elif (team_id in team_id_info) and ('ip' in team_id_info[team_id]) and (team_id_info[team_id]['ip'] != cur_ip):
         # check ip only if ip info exists
-        #print('check ip')
+        print(f'Error: IP not correct, can only be {team_id_info[team_id]["ip"]}')
         emit('response', {'error': f'Error: IP not correct, can only be {team_id_info[team_id]["ip"]}'})
     elif (team_id in team_id_info) and ('port' in team_id_info[team_id]) and (team_id_info[team_id]['port'] != cur_port):
         # check port only if port info exists
         #print('check port')
+        print(f'Error: port not correct, can only be {team_id_info[team_id]["port"]}')
         emit('response', {'error': f'Error: port not correct, can only be {team_id_info[team_id]["port"]}'})
     #elif sum(team_connect.values()) >= max_total_connect:
     #    #print('check max total conect')
     #    emit('response', {'error': 'cannot begin because server overloading, wait'})
     elif team_connect.get(team_id, 0) >= main_cfg['team_max_connections']:
-        #print('check team max connect')
+        print(f'Fail to check team {team_id} max connect')
         emit('response', {'error': 'cannot begin because reaching max connections'})
     elif not begin_if_can(team_id, main_cfg):
-        #print('check team game n')
+        print(f'Fail to check team {team_id} game n')
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
     elif not begin_game_if_can(team_id, data['begin'], main_cfg):
         print(f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}')

@@ -42,7 +42,7 @@ def check_connections(team_id, cfg, refresh=False):
         finally:
             pass
     connect_n = lock_rw_txt(connect_fpath, cfg['team_max_connections'])
-    #print(team_id, 'connection_n', connect_n)
+    print('team_id', team_id, 'connection_n', connect_n)
     return connect_n < cfg['team_max_connections']
 
 
@@ -71,6 +71,7 @@ def begin_if_can(team_id, cfg):
     os.makedirs(day_dir, exist_ok=True)
     team_day_fpath = os.path.join(day_dir, f'{team_id}_game_n.txt')
     team_day_n = lock_rw_txt(team_day_fpath, cfg['max_n'])
+    #print('team_id', team_id, 'team_day_n', team_day_n)
     return team_day_n < cfg['max_n']
 
 
