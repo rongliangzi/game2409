@@ -90,7 +90,7 @@ def handle_continue(data):
     #    print(f'{k}: {v}', end=' ')
     #print('\nrounds', sid_game[sid]['rounds'])
     sid_game[sid]['rounds'] += 1
-    if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4'] or team_id.startswith('l2r0ng')):
+    if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4']):
         # full game receive prediction, calculate accuracy
         grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flatten()
         if 'grid_pred' in data:
@@ -117,7 +117,7 @@ def handle_continue(data):
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
-        print(f'Game: {game_id}, begin: {game_info["game_data_id"]}, rounds: {game_info["rounds"]} itv: {median_itv:.4f}s, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
+        print(f'[End] game_id: {game_id}, data_id: {game_info["game_data_id"]}, rounds: {game_info["rounds"]} itv: {median_itv:.2f}s, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
@@ -132,39 +132,39 @@ def handle_continue(data):
 
 @socketio.on('begin')
 def handle_begin(data):
-    print(f'Begin : {data}')
+    print(f'[Begin] {data}')
     team_id = data['team_id']
     debug_id = ['2hl1', 'l2r0ng', '22xu', 'jhn1u']
     global cur_ip, cur_port
     if (datetime.now() < datetime.strptime(main_cfg.get('starttime', '2000-01-01-01-00'), '%Y-%m-%d-%H-%M')):
-        print('Period does not begin now')
+        print('[Begin error] Period does not begin now')
         emit('response', {'error': 'Period does not begin now'})
     elif (datetime.now() > datetime.strptime(main_cfg.get('endtime', '2099-01-01-01-00'), '%Y-%m-%d-%H-%M')):
-        print('Period has end now')
+        print('[Begin error] Period has end now')
         emit('response', {'error': 'Period has end now'})
     elif (team_id not in team_id_info) and (not any([team_id.startswith(v) for v in debug_id])):
-        print(f'Illegal team_id {team_id}')
+        print(f'[Begin error] Illegal team_id {team_id}')
         emit('response', {'error': 'Illegal team_id'})
     elif (team_id in team_id_info) and ('ip' in team_id_info[team_id]) and (team_id_info[team_id]['ip'] != cur_ip):
         # check ip only if ip info exists
-        print(f'Error: IP not correct, can only be {team_id_info[team_id]["ip"]}')
+        print(f'[Begin error] IP not correct, can only be {team_id_info[team_id]["ip"]}')
         emit('response', {'error': f'Error: IP not correct, can only be {team_id_info[team_id]["ip"]}'})
     elif (team_id in team_id_info) and ('port' in team_id_info[team_id]) and (team_id_info[team_id]['port'] != cur_port):
         # check port only if port info exists
         #print('check port')
-        print(f'Error: port not correct, can only be {team_id_info[team_id]["port"]}')
+        print(f'[Begin error] port not correct, can only be {team_id_info[team_id]["port"]}')
         emit('response', {'error': f'Error: port not correct, can only be {team_id_info[team_id]["port"]}'})
     #elif sum(team_connect.values()) >= max_total_connect:
     #    #print('check max total conect')
     #    emit('response', {'error': 'cannot begin because server overloading, wait'})
     elif team_connect.get(team_id, 0) >= main_cfg['team_max_connections']:
-        print(f'Fail to check team {team_id} max connect')
+        print(f'[Begin error] Fail to check team {team_id} max connect')
         emit('response', {'error': 'cannot begin because reaching max connections'})
     elif not begin_if_can(team_id, main_cfg):
-        print(f'Fail to check team {team_id} game n')
+        print(f'[Begin error] Fail to check team {team_id} game n')
         emit('response', {'error': f'Team {team_id} has run out of game time {main_cfg["max_n"]}'})
     elif not begin_game_if_can(team_id, data['begin'], main_cfg):
-        print(f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}')
+        print(f'[Begin error] Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}')
         emit('response', {'error': f'Team {team_id} has run out of time {main_cfg.get("max_n_each_game", 10000)} on game {data["begin"]}'})
     else:
         try:
@@ -183,7 +183,7 @@ def handle_begin(data):
             send_data = {'score': 0, 'bag': bag, 'loc': loc, 'game_id': game_id, 'team_id': team_id, 'rounds': 0}
             if game_type in ['2', '3', '4']:
                 send_data['img'] = img
-            if game_type in ['a', 'b', 'c'] or team_id.startswith('lzrongdebug'):
+            if game_type in ['a', 'b', 'c'] or team_id.startswith('l2r0ng'):
                 send_data['grid'] = grid
             game_info = {'team_id': team_id, 'game_id': game_id, 'env': env, 'game_data_id': data['begin'],
                          'rounds': 0, 'last_send_time': datetime.now(), 'interval': []}
@@ -191,13 +191,13 @@ def handle_begin(data):
             team_connect[team_id] = team_connect.get(team_id, 0) + 1
             emit('response', send_data)
         except Exception as e:
-            print(f'{request.sid} exception: {e}')
+            print(f'[Exception] {request.sid}: {e}')
             disconnect()
 
 
 @socketio.on_error()
 def error_handler(e):
-    print(f"ERROR occur: {e}")
+    print(f"[ERROR] occur: {e}")
     disconnect()
 
 
@@ -213,12 +213,12 @@ def handle_disconnect():
             team_id = sid_game[request.sid]['team_id']
             game_id = sid_game[request.sid]['game_id']
             team_connect[team_id] -= 1
-            print(f'team: {team_id}, game id {game_id} disconnect, current team connect: {team_connect[team_id]}')
+            print(f'[Disconnect] game_id: {game_id}, team current connect: {team_connect[team_id]}')
         else:
-            print(f'{request.sid} no team disconnect')
+            print(f'[Disconnect] {request.sid}, unknown team')
         del sid_game[request.sid]
     else:
-        print(f'Unknown or already disconnect client: {request.sid}')
+        print(f'[Disconnect] Unknown or already disconnect client: {request.sid}')
 
 
 def set_ip_port(args):
