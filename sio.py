@@ -20,7 +20,7 @@ begin_sid = []
 app = Flask(__name__)
 cur_ip = ''
 cur_port = ''
-socketio = SocketIO(app, async_mode='eventlet', ping_timeout=10)
+socketio = SocketIO(app, async_mode='eventlet', ping_timeout=20)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ip', type=str)
@@ -55,7 +55,7 @@ def init_game2(team_id, main_cfg, begin):
     # return all -2 grid for full game when step=0
     grid = obs['grid']
     if game_type in full_game_types:
-        if not game_id.startswith('lzrongdebug'):
+        if not game_id.startswith('l2r0ng'):
             grid = np.zeros_like(obs['grid'])-2
     return obs['image'].tolist(), obs['bag'].tolist(), grid.tolist(), obs['loc'].tolist(), game_id, game_env
 
@@ -86,11 +86,11 @@ def handle_continue(data):
     team_id = data['team_id']
     game_id = data['game_id']
     action = data['action']
-    for k, v in data.items():
-        print(f'{k}: {v}', end=' ')
-    print('\nrounds', sid_game[sid]['rounds'])
+    #for k, v in data.items():
+    #    print(f'{k}: {v}', end=' ')
+    #print('\nrounds', sid_game[sid]['rounds'])
     sid_game[sid]['rounds'] += 1
-    if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4'] or team_id.startswith('lzrongdebug')):
+    if sid_game[sid]['rounds'] == 1 and (sid_game[sid]['game_data_id'][0] in ['2', '3', '4'] or team_id.startswith('l2r0ng')):
         # full game receive prediction, calculate accuracy
         grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flatten()
         if 'grid_pred' in data:
@@ -100,6 +100,10 @@ def handle_continue(data):
                 sid_game[sid]['acc'] = (correct).sum() / grid_label.size
                 mask = sid_game[sid]['env'].unwrapped.get_mask()  # 1d
                 sid_game[sid]['correct_n'] = (mask * correct).sum()
+            else:
+                print(f'grid_pred.size: {grid_pred.size} != grid_label.size: {grid_label.size}')
+        else:
+            print(f'No grid_pred k-v provided in data, game_id: {game_id}')
     bag, grid, loc, score, is_end = env_step2(sid_game[sid]['env'], game_id, main_cfg, action)
     send_data = {'team_id': team_id, 'game_id': game_id, 'rounds': sid_game[sid]['rounds'], 
                  'is_end': is_end, 'bag': bag, 'loc': loc}
@@ -113,7 +117,7 @@ def handle_continue(data):
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
-        print(f'Game: {game_id} itv: {median_itv:.4f}, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
+        print(f'Game: {game_id}, begin: {game_info["game_data_id"]}, rounds: {game_info["rounds"]} itv: {median_itv:.4f}s, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
