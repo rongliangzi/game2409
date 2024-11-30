@@ -210,11 +210,13 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     if request.sid in sid_game:
-        if 'team_id' in sid_game[request.sid]:
+        if ('team_id' in sid_game[request.sid]) and ('game_id' in sid_game[request.sid]):
             team_id = sid_game[request.sid]['team_id']
             game_id = sid_game[request.sid]['game_id']
             team_connect[team_id] -= 1
             print(f'[Disconnect] game_id: {game_id}, team current connect: {team_connect[team_id]}')
+        elif ('team_id' in sid_game[request.sid])):
+            print(f'[Disconnect] team_id: {team_id}')
         else:
             print(f'[Disconnect] {request.sid}, unknown team')
         del sid_game[request.sid]
