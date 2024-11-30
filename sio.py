@@ -135,6 +135,7 @@ def handle_begin(data):
     print(f'[Begin] {data}')
     team_id = data['team_id']
     debug_id = ['2hl1', 'l2r0ng', '22xu', 'jhn1u']
+    sid_game[request.sid] = {'team_id': team_id}
     global cur_ip, cur_port
     if (datetime.now() < datetime.strptime(main_cfg.get('starttime', '2000-01-01-01-00'), '%Y-%m-%d-%H-%M')):
         print('[Begin error] Period does not begin now')
