@@ -1,9 +1,9 @@
 save_dir: "./team_game_data/"
 team_id_path: "./team_game_data/team_info_20241104.csv"
 # max game begin count for each team per day, no matter finish or not, all types
-max_n: 240
+max_n: 300000
 # max begin count for each team for each {game_type}{game_data_id} per day, no matter finish or not
-max_n_each_game: 2
+max_n_each_game: 3000
 # only can begin between starttime and endtime
 starttime: 2024-12-01-01-00
 endtime: 2024-12-01-06-00
