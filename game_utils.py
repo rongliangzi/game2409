@@ -16,7 +16,8 @@ game_type_dic = {'a': 'a', 'b': '3', 'c': '4', 'd': '5', 'e': '5'}
 def gen_game_result(game_dir, begin):
     # generate game result when initing a game
     with open(f'{game_dir}/game_result.pkl', 'wb') as f:
-        pickle.dump({'cum_score': 0, 'begin': begin, 'rounds': 0, 'acc': None, 'time_itv': []}, f)
+        pickle.dump({'cum_score': 0, 'begin': begin, 'rounds': 0, 'acc': None, 'time_itv': [], 
+                     'start_time': datetime.now().strftime('%Y-%m-%d %H-%M-%S')}, f)
 
 
 def update_acc_if_need(game_result, grid_pred, init_grid, game_dir):
