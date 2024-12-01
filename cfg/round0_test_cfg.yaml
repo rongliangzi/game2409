@@ -5,7 +5,7 @@ max_n: 300000
 # max begin count for each team for each {game_type}{game_data_id} per day, no matter finish or not
 max_n_each_game: 3000
 # only can begin between starttime and endtime
-starttime: 2024-11-01-01-00
+starttime: 2024-12-01-01-00
 endtime: 2024-12-01-06-00
 # if median of step time > max_step_seconds, add timeout_penalty, 
 # if median of step time > 2*max_step_seconds, add 10*timeout_penalty
