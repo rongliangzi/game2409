@@ -117,7 +117,7 @@ def handle_continue(data):
         score += time_penalty
         cum_score = game_info['env'].unwrapped.get_cum_score() + time_penalty
         send_data['acc'] = game_info.get('acc', -1.)
-        print(f'[End] game_id: {game_id}, data_id: {game_info["game_data_id"]}, rounds: {game_info["rounds"]} itv: {median_itv:.2f}s, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
+        print(f'[End] game_id: {game_id}, data_id: {game_info["game_data_id"]}, score: {cum_score:.1f} rounds: {game_info["rounds"]} itv: {median_itv:.2f}s, acc: {send_data["acc"]:.4f}, correct_n: {game_info.get("correct_n", 0)}')
         with open(f'{game_dir}/game_result.pkl', 'wb') as f:
             pickle.dump({'cum_score': cum_score, 
                          'acc': game_info.get('acc', -1.), 
