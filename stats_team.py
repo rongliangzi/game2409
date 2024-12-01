@@ -50,7 +50,7 @@ if __name__=="__main__":
                     f.write(f',,cum_score,game_type,game_data_id,rounds,acc\n,,0,2,00000,0,0')
             continue
         # after public
-        all_game_key = os.listdir(team_dir)
+        all_game_key = sorted(os.listdir(team_dir))
         for game_key in all_game_key:
             # all games of one team
             if (not game_key.startswith('20241')) or (int(game_key[:8]) < 20241111):
