@@ -6,7 +6,7 @@ max_n: 300000
 max_n_each_game: 3000
 # only can begin between starttime and endtime
 starttime: 2024-12-01-01-00
-endtime: 2024-12-01-06-00
+endtime: 2024-12-01-15-00
 # if median of step time > max_step_seconds, add timeout_penalty, 
 # if median of step time > 2*max_step_seconds, add 10*timeout_penalty
 max_step_seconds: 2.0
