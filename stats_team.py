@@ -22,7 +22,9 @@ def add_not_finish_game(st, ed, mode, team_stats, df_index, team_id):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--st', type=int, default=0)
+    parser.add_argument('--sttime', type=int, default=0)
     parser.add_argument('--ed', type=int, default=0)
+    parser.add_argument('--edtime', type=int, default=0)
     parser.add_argument('--ast', type=int, default=0)
     parser.add_argument('--aed', type=int, default=-1)
     parser.add_argument('--st2', type=int, default=0)
@@ -57,8 +59,14 @@ if __name__=="__main__":
                 continue
             if (args.st != 0) and (int(game_key[:8]) < args.st):
                 continue
+            if (args.sttime !=0):
+                if (int(game_key[9:11]) < args.sttime):
+                    continue
             if (args.ed != 0) and (int(game_key[:8]) > args.ed):
                 continue
+            if (args.edtime !=0):
+                if (int(game_key[9:11]) > args.edtime):
+                    continue
             cur_path = os.path.join(team_dir, game_key)
             if not os.path.isdir(cur_path):
                 continue
