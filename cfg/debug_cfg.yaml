@@ -15,21 +15,11 @@ max_begin_num: 40
 param2:
   size: 12
   cls_n: 21
-  max_carry: 999
   elim_n: 4
   max_steps_k: 4
   carry_k: 1.
-param3:
+parama:
   size: 12
   cls_n: 21
-  max_carry: 999
-  elim_n: 3
-  max_steps_k: 4
-  carry_k: 1.
-param4:
-  size: 16
-  cls_n: 21
-  max_carry: 999
   elim_n: 4
   max_steps_k: 4
-  carry_k: 1.
