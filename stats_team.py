@@ -64,7 +64,7 @@ if __name__=="__main__":
                     continue
             if (args.ed != 0) and (int(game_key[:8]) > args.ed):
                 continue
-            if (args.edtime !=0):
+            if (args.edtime !=0) and (args.ed != 0) and (int(game_key[:8]) == args.ed):
                 if (int(game_key[9:11]) > args.edtime):
                     continue
             cur_path = os.path.join(team_dir, game_key)
