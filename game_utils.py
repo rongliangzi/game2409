@@ -115,14 +115,14 @@ def get_init_grid_loc(cfg, main_cfg, type_dir, game_data_id):
 def get_game_id_dir(main_cfg, team_id, time_key):
     # in case of multi requests at the same time
     game_id = f'{team_id}_{time_key}'
-    game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
+    game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
     while True:
         try:
             os.makedirs(game_dir, exist_ok=False)
         except OSError as e:
             #print(e, 'add a to game_id')
             game_id = game_id +'a'
-            game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
+            game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
         else:
             #print('makedirs', game_dir)
             break
@@ -197,7 +197,7 @@ def env_step(game_id, main_cfg, action, cls, grid_pred):
     time_str = ''
     st = time.time()
     time_str += f'{datetime.now()}, begin env_step\n'
-    game_dir = os.path.join(main_cfg["save_dir"], game_id.replace("_", "/"))
+    game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
     with open(f'{game_dir}/game_env.pkl', 'rb') as f:
         game_env = pickle.load(f)
     with open(f'{game_dir}/game_result.pkl', 'rb') as f:
