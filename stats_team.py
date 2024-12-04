@@ -59,7 +59,7 @@ if __name__=="__main__":
                 continue
             if (args.st != 0) and (int(game_key[:8]) < args.st):
                 continue
-            if (args.sttime !=0):
+            if (int(game_key[:8]) == args.st) and (args.sttime !=0):
                 if (int(game_key[9:11]) < args.sttime):
                     continue
             if (args.ed != 0) and (int(game_key[:8]) > args.ed):
