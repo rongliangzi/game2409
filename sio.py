@@ -86,6 +86,7 @@ def handle_continue(data):
     team_id = data['team_id']
     game_id = data['game_id']
     action = data['action']
+    game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
     #for k, v in data.items():
     #    print(f'{k}: {v}', end=' ')
     #print('\nrounds', sid_game[sid]['rounds'])
@@ -95,11 +96,16 @@ def handle_continue(data):
         grid_label = sid_game[sid]['env'].unwrapped.get_init_grid().flatten()
         if 'grid_pred' in data:
             grid_pred = np.array(data['grid_pred'], dtype=int).flatten()
+            np.save(f'{game_dir}/grid_pred.npy', grid_pred)
             if grid_pred.size == grid_label.size:
                 correct = (grid_pred == grid_label).astype(int)
                 sid_game[sid]['acc'] = (correct).sum() / grid_label.size
                 mask = sid_game[sid]['env'].unwrapped.get_mask()  # 1d
-                sid_game[sid]['correct_n'] = (mask * correct).sum()
+                #sid_game[sid]['correct_n'] = (mask * correct).sum()
+                sid_game[sid]['correct_n'] = {cls_: 0 for cls_ in range(21)}
+                for i_1d in range(len(grid_pred)):
+                    if (mask[i_1d] > 0) and (grid_pred[i_1d] == grid_label[i_1d]):
+                        sid_game[sid]['correct_n'][grid_label[i_1d]] += 1
             else:
                 print(f'grid_pred.size: {grid_pred.size} != grid_label.size: {grid_label.size}')
         else:
@@ -109,7 +115,6 @@ def handle_continue(data):
                  'is_end': is_end, 'bag': bag, 'loc': loc}
     if is_end:
         # last round, send accuracy, calculate time penalty
-        game_dir = os.path.join(main_cfg["save_dir"], '/'.join(game_id.rsplit('_', 1)))
         game_info = sid_game[sid]
         median_itv = np.median(game_info['interval'])
         time_penalty = get_time_penalty(median_itv, main_cfg, game_id)
