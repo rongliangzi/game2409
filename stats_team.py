@@ -37,6 +37,8 @@ if __name__=="__main__":
     all_teams = os.listdir(save_dir)
     for team_id in all_teams:
         team_stats = {'cum_score': [], 'game_type': [], 'game_data_id': [], 'rounds': [], 'acc': [], 'correct_n': []}
+        for i in range(21):
+            team_stats[f'correct_{i}'] = []
         df_index = []
         # iterate on all teams
         team_dir = os.path.join(save_dir, team_id)
@@ -84,13 +86,25 @@ if __name__=="__main__":
                 game_result['game_data_id'] = game_result['begin'][1:]
                 #del game_result['begin']
                 for k in team_stats.keys():
-                    team_stats[k].append(game_result.get(k, 0))
+                    if k == 'correct_n':
+                        if isinstance(game_result['correct_n'], dict):
+                            team_stats[k].append(sum(game_result[f'correct_n'].values()))
+                        else:
+                            team_stats[k].append(game_result.get(k, 0))
+                    elif k.startswith('correct_'):
+                        if isinstance(game_result['correct_n'], dict):
+                            cls = (k.split('_')[1])
+                            team_stats[k].append(game_result['correct_n'][int(cls)])
+                        else:
+                            team_stats[k].append(0)
+                    else:
+                        team_stats[k].append(game_result.get(k, 0))
                 df_index.append((team_id, game_key))
             except Exception as e:
                 print(f'Exception {e} when loading {game_result_path}')
                 #shutil.rmtree(os.path.join(team_dir, game_key))
         if args.verbose:
-            print(f'Stats {team_id:>13}, game num: {len(df_index)}')
+            print(f'Stats {team_id:>13}, game num: {len(df_index)},')
         if (args.ast >=0) and (args.aed > args.ast):
             add_not_finish_game(args.ast, args.aed, 'a', team_stats, df_index, team_id)
         if (args.st2 >=0) and (args.ed2 > args.st2):
@@ -101,7 +115,7 @@ if __name__=="__main__":
             save_csv_path = os.path.join(team_dir, f'team_stats.csv')
         if len(df_index) == 0:
             with open(save_csv_path, 'w') as f:
-                f.write(f',,cum_score,game_type,game_data_id,rounds,acc')
+                f.write(f',,' + ','.join([k for k in team_stats.keys()]))
             continue
         df = pd.DataFrame(team_stats, index=pd.MultiIndex.from_tuples(df_index))
         df.to_csv(save_csv_path)
