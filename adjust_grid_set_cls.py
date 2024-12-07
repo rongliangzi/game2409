@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import sys
 
 def can_end(a, b, th=0.1):
     asum = sum(a.values())
@@ -28,6 +29,7 @@ def adjust_one_pair(grid_li, cur, tgt):
         if p_diff < min_diff:
             min_diff = p_diff
             l_cls = k
+    do_adjust = False
     for i, grid_i in enumerate(grid_li):
         h_cnt = (grid_i == h_cls).sum()
         l_cnt = (grid_i == l_cls).sum()
@@ -39,19 +41,21 @@ def adjust_one_pair(grid_li, cur, tgt):
             grid_i[grid_i == l_cls] = -2
             grid_i[grid_i == -1] = l_cls
             grid_i[grid_i == -2] = h_cls
+            do_adjust = True
             break
+    return do_adjust
 
 
 if __name__ == '__main__':
     # set 1. root_dir, game_data_dir. 2. threshold 3. target_cls_distribution (now fixed)
     # to make class distribution close to target class distribution
-    root_dir = '/root/Desktop/hunter/init_game_data/round0_eval/2/'
+    root_dir = '/root/Desktop/hunter/init_game_data/round1_test/2/'
     game_data_dirs = [os.path.join(root_dir, f'{i:05}') for i in range(0, 100)]
     class_num = dict()
     target_cls_distribution = dict()
     for i in range(20):
-        target_cls_distribution[i] = 100
-    target_cls_distribution[20] = 400
+        target_cls_distribution[i] = 700
+    target_cls_distribution[20] = 1750
     print('target_cls_distribution', target_cls_distribution)
     grid_li = []
     for gdd in game_data_dirs:
@@ -66,10 +70,13 @@ if __name__ == '__main__':
     grid_sum = sum(class_num.values())
     print('class sum on all grids:', grid_sum)
     for _ in range(3000):
-        if can_end(class_num, target_cls_distribution, 0.002):
+        if can_end(class_num, target_cls_distribution, 0.05):
             break
-        adjust_one_pair(grid_li, class_num, target_cls_distribution)
-    print('class num', class_num)
+        do_adjust = adjust_one_pair(grid_li, class_num, target_cls_distribution)
+        if not do_adjust:
+            break
+    print('class num', class_num, sum(class_num.values()))
+    #sys.exit(0)
     # save new
     for i, gdd in enumerate(game_data_dirs):
         np.save(os.path.join(gdd, 'grid.npy'), grid_li[i])
