@@ -27,6 +27,5 @@ if __name__ == "__main__":
                 for j in range(21):
                     type2[gid][j] = row[f'correct_{j}']
                     correct_n[j] += row[f'correct_{j}']
-            print(gid)
     for k in correct_n.keys():
         print(f'class {k:2}: {correct_n[k] / total_num[k]:.4f}')
